@@ -1,0 +1,126 @@
+{
+  "common": {
+    "delete": "Sil"
+  },
+  "tabs": {
+    "home": "Ana sayfa",
+    "receipts": "Fişler",
+    "insights": "Analiz",
+    "budgets": "Bütçeler"
+  },
+  "scan": {
+    "button": "Fiş tara"
+  },
+  "home": {
+    "title": "Bu ay",
+    "emptyTitle": "Henüz fiş yok",
+    "emptyBody": "Bir kâğıt fişi ya da e-Arşiv faturasını tarayın, burada görünsün.",
+    "emptyAction": "Fiş tara"
+  },
+  "receipts": {
+    "title": "Fişler",
+    "emptyTitle": "Henüz fiş yok",
+    "emptyBody": "Taradığınız ya da eklediğiniz her fiş burada, en yenisi üstte listelenir."
+  },
+  "insights": {
+    "title": "Analiz",
+    "emptyTitle": "Henüz gösterilecek bir şey yok",
+    "emptyBody": "Birkaç fiş kaydettiğinizde analizler burada görünür."
+  },
+  "budgets": {
+    "title": "Bütçeler",
+    "emptyTitle": "Henüz bütçe yok",
+    "emptyBody": "Bir kategori için aylık limit belirleyin, ne kadar yaklaştığınızı görün."
+  },
+  "reviewField": {
+    "confirmed": "Doğru görünüyor",
+    "check": "Bu alanı kontrol edin"
+  },
+  "monthTotal": {
+    "up": "Artış",
+    "down": "Düşüş"
+  },
+  "dev": {
+    "title": "Bileşenler",
+    "open": "Bileşen vitrinini aç",
+    "theme": "Tema",
+    "themeSystem": "Sistem",
+    "themeLight": "Açık",
+    "themeDark": "Koyu",
+    "language": "Dil",
+    "sampleMerchant": "Migros Jet",
+    "sampleMerchant2": "Kahve Dünyası",
+    "sampleToday": "Bugün",
+    "sampleYesterday": "Dün",
+    "sampleDate": "12 Eki 2026",
+    "sampleThisMonth": "Ekim harcaması",
+    "sampleVsLastMonth": "geçen ayın aynı gününe göre",
+    "sampleSave": "Fişi kaydet",
+    "sampleRetake": "Yeniden çek",
+    "sampleCancel": "Vazgeç",
+    "sampleDeleteReceipt": "Fişi sil",
+    "sampleSetBudget": "Bütçe belirle",
+    "sampleAll": "Tümü",
+    "sampleWeek": "Hafta",
+    "sampleMonth": "Ay",
+    "sampleYear": "Yıl",
+    "sampleAmount": "Tutar",
+    "sampleDateLabel": "Tarih",
+    "sampleDateError": "Geçerli bir tarih seçin",
+    "sampleNote": "Not",
+    "sampleNotePlaceholder": "İsteğe bağlı",
+    "sampleNoteHelper": "Bunu yalnızca siz görürsünüz",
+    "sampleMerchantLabel": "İşletme",
+    "sampleTotalLabel": "Toplam",
+    "sampleCheckTotal": "Toplamı kontrol edin",
+    "sampleTotal": "Toplam",
+    "sampleVat": "KDV %{{rate}}",
+    "sampleLeft": "{{amount}} kaldı",
+    "sampleOver": "{{amount}} aşıldı",
+    "sampleManual": "Manuel",
+    "sampleProcessing": "İşleniyor",
+    "sampleQueued": "Çevrimdışı — sırada",
+    "sampleEArsiv": "e-Arşiv",
+    "sampleNeedsReview": "Kontrol gerekli",
+    "sampleOverBudget": "Bütçe aşıldı",
+    "sampleFilteredEmpty": "Bu ay yemek fişi yok",
+    "sampleFilteredBody": "Başka bir ay seçin ya da filtreyi kaldırın.",
+    "sampleClearFilter": "Filtreyi kaldır",
+    "itemBread": "Ekmek",
+    "itemMilk": "Süt 1L",
+    "itemCheese": "Beyaz peynir",
+    "section": {
+      "buttons": "Button",
+      "scan": "ScanButton",
+      "chips": "Chip",
+      "badges": "Badge",
+      "segmented": "SegmentedControl",
+      "textField": "TextField",
+      "reviewField": "ReviewField",
+      "monthTotal": "MonthTotal",
+      "breakdown": "CategoryBreakdown",
+      "budget": "BudgetBar",
+      "row": "ReceiptRow",
+      "card": "ReceiptCard",
+      "empty": "EmptyState"
+    }
+  },
+  "category": {
+    "groceries": "Market",
+    "dining": "Yeme içme",
+    "transport": "Ulaşım",
+    "shopping": "Alışveriş",
+    "health": "Sağlık",
+    "bills": "Faturalar",
+    "home": "Ev",
+    "entertainment": "Eğlence",
+    "other": "Diğer"
+  },
+  "receiptRow": {
+    "processing": "İşleniyor"
+  },
+  "receiptCard": {
+    "total": "Toplam",
+    "photo": "Fiş fotoğrafı {{n}}"
+  }
+}

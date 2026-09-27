@@ -1,0 +1,126 @@
+{
+  "common": {
+    "delete": "Delete"
+  },
+  "tabs": {
+    "home": "Home",
+    "receipts": "Receipts",
+    "insights": "Insights",
+    "budgets": "Budgets"
+  },
+  "scan": {
+    "button": "Scan receipt"
+  },
+  "home": {
+    "title": "This month",
+    "emptyTitle": "No receipts yet",
+    "emptyBody": "Scan a paper receipt or e-Arşiv invoice and it will show up here.",
+    "emptyAction": "Scan a receipt"
+  },
+  "receipts": {
+    "title": "Receipts",
+    "emptyTitle": "No receipts yet",
+    "emptyBody": "Every receipt you scan or add is listed here, newest first."
+  },
+  "insights": {
+    "title": "Insights",
+    "emptyTitle": "Nothing to show yet",
+    "emptyBody": "Insights appear once you have saved a few receipts."
+  },
+  "budgets": {
+    "title": "Budgets",
+    "emptyTitle": "No budgets yet",
+    "emptyBody": "Set a monthly limit for a category to see how close you are."
+  },
+  "reviewField": {
+    "confirmed": "Looks right",
+    "check": "Check this field"
+  },
+  "monthTotal": {
+    "up": "Up",
+    "down": "Down"
+  },
+  "dev": {
+    "title": "Components",
+    "open": "Open component showcase",
+    "theme": "Theme",
+    "themeSystem": "System",
+    "themeLight": "Light",
+    "themeDark": "Dark",
+    "language": "Language",
+    "sampleMerchant": "Migros Jet",
+    "sampleMerchant2": "Blue Bottle Coffee",
+    "sampleToday": "Today",
+    "sampleYesterday": "Yesterday",
+    "sampleDate": "12 Oct 2026",
+    "sampleThisMonth": "Spent in October",
+    "sampleVsLastMonth": "vs same day last month",
+    "sampleSave": "Save receipt",
+    "sampleRetake": "Retake photo",
+    "sampleCancel": "Cancel",
+    "sampleDeleteReceipt": "Delete receipt",
+    "sampleSetBudget": "Set budget",
+    "sampleAll": "All",
+    "sampleWeek": "Week",
+    "sampleMonth": "Month",
+    "sampleYear": "Year",
+    "sampleAmount": "Amount",
+    "sampleDateLabel": "Date",
+    "sampleDateError": "Pick a real date",
+    "sampleNote": "Note",
+    "sampleNotePlaceholder": "Optional",
+    "sampleNoteHelper": "Only you can see this",
+    "sampleMerchantLabel": "Merchant",
+    "sampleTotalLabel": "Total",
+    "sampleCheckTotal": "Check the total",
+    "sampleTotal": "Total",
+    "sampleVat": "VAT {{rate}}%",
+    "sampleLeft": "{{amount}} left",
+    "sampleOver": "Over by {{amount}}",
+    "sampleManual": "Manual",
+    "sampleProcessing": "Processing",
+    "sampleQueued": "Offline — queued",
+    "sampleEArsiv": "e-Arşiv",
+    "sampleNeedsReview": "Needs review",
+    "sampleOverBudget": "Over budget",
+    "sampleFilteredEmpty": "No dining receipts this month",
+    "sampleFilteredBody": "Try another month or clear the filter.",
+    "sampleClearFilter": "Clear filter",
+    "itemBread": "Bread",
+    "itemMilk": "Milk 1L",
+    "itemCheese": "White cheese",
+    "section": {
+      "buttons": "Button",
+      "scan": "ScanButton",
+      "chips": "Chip",
+      "badges": "Badge",
+      "segmented": "SegmentedControl",
+      "textField": "TextField",
+      "reviewField": "ReviewField",
+      "monthTotal": "MonthTotal",
+      "breakdown": "CategoryBreakdown",
+      "budget": "BudgetBar",
+      "row": "ReceiptRow",
+      "card": "ReceiptCard",
+      "empty": "EmptyState"
+    }
+  },
+  "category": {
+    "groceries": "Groceries",
+    "dining": "Dining",
+    "transport": "Transport",
+    "shopping": "Shopping",
+    "health": "Health",
+    "bills": "Bills",
+    "home": "Home",
+    "entertainment": "Entertainment",
+    "other": "Other"
+  },
+  "receiptRow": {
+    "processing": "Processing"
+  },
+  "receiptCard": {
+    "total": "Total",
+    "photo": "Receipt photo {{n}}"
+  }
+}
