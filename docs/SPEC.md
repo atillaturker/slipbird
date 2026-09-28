@@ -119,6 +119,7 @@ Each ends with typecheck, lint and tests passing, and a short summary.
 - **M5 — Insights, budgets, currency.** Exchange-rate service, conversion everywhere totals appear, Home fully wired, Insights charts, Budgets with alerts.
 - **M6 — Export and settings.** Filters sheet, CSV and PDF export (`expo-print` + `expo-sharing`), settings screens, delete all data.
 - **M7 — Store readiness.** App icon and splash, `app.json` (bundle ids, names, versions, permission strings in en/tr), EAS build profiles, privacy policy text (states: images stay on device, OCR text is sent to our parser and not stored), RevenueCat Pro (unlimited scans, PDF reports, budgets beyond 3 categories — confirm pricing with the owner first), store listing texts in en/tr.
+  - TODO (release checklist): make sure `PARSE_QUOTA_DISABLED` is NOT set in the production function secrets (`supabase secrets list`); it lifts the 15-parses-a-month limit for development.
   - TODO: `parse-receipt` currently uses Gemini's free tier, where Google may use prompts (receipt OCR text) to improve its models. Before launch either enable billing on the Gemini project (paid tier) or disclose this in the privacy policy.
   - TODO: `@react-native-ml-kit/text-recognition` bundles Chinese/Devanagari/Japanese/Korean models on Android; only Latin is needed — strip the others to cut APK size.
 

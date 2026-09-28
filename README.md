@@ -38,6 +38,8 @@ npx supabase functions serve parse-receipt --env-file supabase/functions/.env
 Point the app at it in `.env.local` (`EXPO_PUBLIC_SUPABASE_URL=http://<your computer's LAN IP>:54321`,
 or `http://10.0.2.2:54321` from the Android emulator), then restart Metro.
 
+To test parsing without the 15-a-month limit, keep `PARSE_QUOTA_DISABLED=true` in `supabase/functions/.env` (hosted: `npx supabase secrets set PARSE_QUOTA_DISABLED=true`, and `secrets unset` before release).
+
 Function tests (Deno, no install needed):
 
 ```bash

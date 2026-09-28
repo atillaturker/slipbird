@@ -4,7 +4,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { adaptersFromEnv, createParser } from './providers/index.ts';
 import { NO_DETAILS, ParserError, type ProviderAttempt, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
-import { currentMonth, FREE_MONTHLY_PARSES } from './quota.ts';
+import { currentMonth, FREE_MONTHLY_PARSES, quotaEnforced } from './quota.ts';
 import { ParseRequestSchema } from './schema.ts';
 
 type ErrorCode = 'bad_request' | 'unauthorized' | 'quota_exceeded' | 'busy' | 'parse_failed' | 'provider_error' | 'config_error';
@@ -50,6 +50,8 @@ type LogEntry = {
   finishReason?: string | null;
   /** This month's successful parses after this request (or so far, when refused), and the free limit. */
   quotaUsed?: number | null;
+  /** True when PARSE_QUOTA_DISABLED lifted the limit for this request (development). */
+  quotaBypassed?: boolean;
 };
 
 function log(entry: LogEntry) {
@@ -70,6 +72,7 @@ function log(entry: LogEntry) {
       finishReason: entry.finishReason ?? null,
       quotaUsed: entry.quotaUsed ?? null,
       quotaLimit: FREE_MONTHLY_PARSES,
+      ...(entry.quotaBypassed ? { quotaBypassed: true } : {}),
       // Per-provider tries (status, error status/message, quota, validation retries) — no receipt text, no keys.
       ...(entry.attempts?.length ? { attempts: entry.attempts } : {}),
       ...(entry.skippedProviders?.length ? { skippedProviders: entry.skippedProviders } : {}),
@@ -115,7 +118,8 @@ Deno.serve(async (req) => {
     .eq('month', month)
     .maybeSingle();
   if (usageError) return fail('config_error');
-  if ((usageRow?.count ?? 0) >= FREE_MONTHLY_PARSES) {
+  const enforced = quotaEnforced(Deno.env);
+  if (enforced && (usageRow?.count ?? 0) >= FREE_MONTHLY_PARSES) {
     log({ userId, outcome: 'quota_exceeded', quotaUsed: usageRow?.count ?? null, startedAt });
     return fail('quota_exceeded');
   }
@@ -137,7 +141,7 @@ Deno.serve(async (req) => {
     // Count only successful parses against the quota.
     const { data: quotaUsed } = await admin.rpc('record_scan', { p_user: userId, p_month: month });
     const answered = attempts[attempts.length - 1];
-    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, startedAt, ...ref });
+    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, quotaBypassed: !enforced, startedAt, ...ref });
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {
