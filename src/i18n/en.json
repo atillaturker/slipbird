@@ -153,7 +153,8 @@
     "eArsiv": "e-Arşiv",
     "needsReview": "Needs review",
     "queued": "Offline — queued",
-    "failed": "Couldn’t read"
+    "failed": "Couldn’t read",
+    "readyToSave": "Ready to save"
   },
   "payment": {
     "card": "Card",
@@ -244,5 +245,50 @@
     "page": "Page {{n}} of {{count}}",
     "open": "Open page {{n}}",
     "close": "Close"
+  },
+  "review": {
+    "title": "Check receipt",
+    "save": "Save receipt",
+    "delete": "Delete scan",
+    "merchant": "Merchant",
+    "date": "Date",
+    "total": "Total",
+    "currency": "Currency",
+    "category": "Category",
+    "payment": "Payment method",
+    "note": "Note",
+    "tabReceipt": "Receipt",
+    "tabItems": "Items",
+    "pickCategory": "Choose a category",
+    "done": "Done",
+    "changeValue": "Change {{label}}",
+    "flags": {
+      "merchantMissing": "Add the store name",
+      "merchantCheck": "Check the store name",
+      "dateMissing": "Check the date",
+      "dateFuture": "This date is in the future",
+      "dateOld": "This date is over a year ago",
+      "dateCheck": "Check the date",
+      "totalMissing": "Add the total",
+      "totalNotPositive": "Check the total",
+      "itemsMismatch": "The items don’t add up to this total",
+      "totalCheck": "Check the total",
+      "currencyCheck": "Check the currency",
+      "categoryCheck": "Check the category"
+    },
+    "processing": "Still reading this receipt. You can fill it in yourself or wait."
+  },
+  "duplicate": {
+    "title": "This looks like a receipt you already saved",
+    "body": "{{merchant}}, {{date}}, {{amount}}",
+    "saveAnyway": "Save anyway",
+    "discard": "Discard"
+  },
+  "quota": {
+    "title": "This month’s free scans are used",
+    "body": "You can still add receipts by hand. Scans are read again from next month."
+  },
+  "zoom": {
+    "hint": "Pinch to zoom, double-tap to reset"
   }
 }

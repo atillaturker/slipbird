@@ -58,7 +58,7 @@ export default function ReceiptDetailScreen() {
         <Button block onPress={() => void retake(receipt.id)}>
           {t('scan.retake')}
         </Button>
-        <Button variant="secondary" block onPress={() => router.replace({ pathname: '/receipt/new', params: { id: receipt.id } })}>
+        <Button variant="secondary" block onPress={() => router.replace({ pathname: '/scan/review', params: { id: receipt.id } })}>
           {t('scan.enterManually')}
         </Button>
         <Button variant="danger" block onPress={confirmDelete}>

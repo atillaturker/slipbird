@@ -17,6 +17,7 @@ const row: ReceiptRow = {
   ettn: null,
   documentNumber: null,
   imagePaths: '["a.jpg"]',
+  fieldConfidence: null,
   createdAt: '2026-10-12T15:42:00.000Z',
   updatedAt: '2026-10-12T15:42:00.000Z',
 };

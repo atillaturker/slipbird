@@ -1,0 +1,11 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# Function secrets for local serving (GEMINI_API_KEY etc.) — never commit
+functions/.env

@@ -13,7 +13,7 @@ export function Chip(p: Press & { selected?: boolean; category?: Category; child
 export function Badge(p: { tone?: 'neutral' | 'verified' | 'review' | 'over'; children: React.ReactNode }): React.ReactElement;
 export function SegmentedControl(p: { options: string[]; value?: string; onChange?: (v: string) => void }): React.ReactElement;
 export function TextField(p: { label: string; value?: string; placeholder?: string; prefix?: string; figure?: boolean; helper?: string; error?: string }): React.ReactElement;
-export function ReviewField(p: { label: string; value?: string; figure?: boolean; confidence?: 'high' | 'low'; flag?: string; onChangeText?: (v: string) => void }): React.ReactElement;
+export function ReviewField(p: { label: string; value?: string; figure?: boolean; confidence?: 'high' | 'low'; flag?: string; onChangeText?: (v: string) => void; onPress?: () => void }): React.ReactElement;
 export function MonthTotal(p: { label: string; amount: string; delta?: string; deltaDirection?: 'up' | 'down'; deltaLabel?: string }): React.ReactElement;
 export function CategoryBreakdown(p: { items: { category: Category; value: number; display: string; label?: string }[]; onPressItem?: (category: Category) => void }): React.ReactElement;
 export function BudgetBar(p: { category: Category; label?: string; spent: number; limit: number; spentDisplay: string; limitDisplay: string; leftDisplay?: string; overDisplay?: string }): React.ReactElement;
@@ -77,7 +77,7 @@ A labelled input for manual entry and settings. Props: `label`, `value`, `placeh
 
 ## ReviewField
 
-One extracted field on the post-scan review screen. Props: `label`, `value`, `figure`, `confidence` (`high` default, `low`), `flag` (the short check message), `onChangeText`.
+One extracted field on the post-scan review screen. Props: `label`, `value`, `figure`, `confidence` (`high` default, `low`), `flag` (the short check message), `onChangeText`, `onPress` (read-only row that opens a picker — date, currency, category).
 
 - Stack them in a `sb-review-group` below the receipt image: Merchant, Date, Total, KDV, Category, Payment method.
 - `low` tints the field `check-soft` and shows the flag in `check` ("Check the total"). High shows a green ✓.

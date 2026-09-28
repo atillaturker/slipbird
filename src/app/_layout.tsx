@@ -9,6 +9,9 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { startScanQueue } from '@/services/scan-queue';
+import { ensureSession } from '@/services/supabase';
+import { processQueuedReceipt } from '@/store/scan';
 import { useTheme } from '@/theme';
 
 void SplashScreen.preventAutoHideAsync();
@@ -27,6 +30,12 @@ export default function RootLayout() {
   useEffect(() => {
     if (ready) void SplashScreen.hideAsync();
   }, [ready]);
+
+  // Anonymous session for parse-receipt, and the offline scan queue (retries when back online).
+  useEffect(() => {
+    void ensureSession();
+    return startScanQueue(processQueuedReceipt);
+  }, []);
 
   if (!ready) return null;
 
@@ -53,6 +62,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="receipt/[id]" options={header} />
           <Stack.Screen name="receipt/new" options={{ ...header, presentation: 'modal' }} />
+          <Stack.Screen name="scan/review" options={header} />
           <Stack.Screen name="scan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="dev/components" />
         </Stack>

@@ -1,4 +1,4 @@
-import { currencyExponent, currencySymbol, formatAmountInput, formatMoney, parseAmount } from '../money';
+import { currencyExponent, currencySymbol, detectNumberStyle, formatAmountInput, formatMoney, parseAmount } from '../money';
 
 // Intl may use narrow/no-break spaces; compare with plain spaces.
 const plain = (s: string) => s.replace(/[  ]/g, ' ');
@@ -123,5 +123,15 @@ describe('currencySymbol', () => {
     expect(currencySymbol('TRY', 'tr')).toBe('₺');
     expect(currencySymbol('USD', 'en')).toBe('$');
     expect(currencySymbol('EUR', 'tr')).toBe('€');
+  });
+});
+
+describe('detectNumberStyle', () => {
+  it('reads the style from the receipt amounts', () => {
+    expect(detectNumberStyle(['1.234,56', '12,50', '3,20'])).toBe('comma');
+    expect(detectNumberStyle(['1,234.56', '12.50'])).toBe('dot');
+    expect(detectNumberStyle(['12,50', '1.234'])).toBe('comma');
+    expect(detectNumberStyle(['45', '1.234'])).toBeNull();
+    expect(detectNumberStyle([])).toBeNull();
   });
 });

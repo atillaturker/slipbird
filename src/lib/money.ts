@@ -21,6 +21,30 @@ export function localeNumberStyle(locale: string): NumberFormatStyle {
   return locale.toLowerCase().startsWith('en') ? 'dot' : 'comma';
 }
 
+/**
+ * The number style a receipt uses, judged from all its amounts: a string with both separators, or
+ * one separator followed by exactly 2 digits, tells us which one is decimal. Null when nothing does.
+ */
+export function detectNumberStyle(amounts: string[]): NumberFormatStyle | null {
+  let comma = 0;
+  let dot = 0;
+  for (const raw of amounts) {
+    const s = raw.replace(/[^\d.,]/g, '');
+    const lastDot = s.lastIndexOf('.');
+    const lastComma = s.lastIndexOf(',');
+    if (lastDot >= 0 && lastComma >= 0) {
+      if (lastComma > lastDot) comma += 1;
+      else dot += 1;
+    } else if (/,\d{2}$/.test(s) && s.split(',').length === 2) {
+      comma += 1;
+    } else if (/\.\d{2}$/.test(s) && s.split('.').length === 2) {
+      dot += 1;
+    }
+  }
+  if (comma === dot) return null;
+  return comma > dot ? 'comma' : 'dot';
+}
+
 // Safe upper bound: keeps minor units well inside Number.MAX_SAFE_INTEGER.
 const MAX_DIGITS = 15;
 

@@ -1,40 +1,149 @@
+import { getLocales } from 'expo-localization';
 import { router } from 'expo-router';
+import Storage from 'expo-sqlite/kv-store';
 import { useTranslation } from 'react-i18next';
 import { Alert } from 'react-native';
 
+import { getDb } from '@/db';
+import { getMerchantRule } from '@/db/merchant-rules';
+import { getReceipt } from '@/db/receipts';
+import { i18n } from '@/i18n';
 import { toISODate } from '@/lib/dates';
 import type { GibQr } from '@/lib/gib-qr';
-import { applyGibQr, awaitingReview, pendingScan } from '@/lib/scan-draft';
+import { categoryFromRule } from '@/lib/merchant-rules';
+import { fitForParser, isReadable } from '@/lib/ocr-text';
+import { mergeGibQr, normalizeParsedReceipt } from '@/lib/receipt-normalize';
+import { unparsedConfidence } from '@/lib/review-flags';
+import { applyGibQr, pendingScan } from '@/lib/scan-draft';
+import type { Receipt, ReceiptInput } from '@/lib/types';
 import { findGibQr, importPhotos, scanDocument, type Capture } from '@/services/capture';
 import { saveReceiptImages } from '@/services/images';
+import { recognizePages } from '@/services/ocr';
+import { isRetryable, parseReceiptText } from '@/services/parser-client';
+import { enqueueReceipt, type QueueOutcome } from '@/services/scan-queue';
 
 import { useReceipts } from './receipts';
 import { useSettings } from './settings';
 
+function today() {
+  return toISODate(new Date());
+}
+
 /**
- * Turns captured pages into a receipt: the `processing` row appears immediately, then images are
- * stored and the pages checked for a GİB QR. Ends as `needs_review` (the person fills in what's
- * missing until OCR arrives in M4) or `failed`. With `retakeId`, replaces that receipt's pages.
+ * Captured pages → receipt (docs/SPEC.md §1): the `processing` row appears immediately; images are
+ * stored; a GİB QR fills what it carries; on-device OCR reads the text. Readable text is queued for
+ * parse-receipt (retried offline); unreadable pages without a QR end as `failed`.
  */
 export async function ingestPages(pages: string[], source: 'scan' | 'import', retakeId?: string): Promise<string> {
   const { save } = useReceipts.getState();
-  const draft = pendingScan(source, toISODate(new Date()), useSettings.getState().homeCurrency);
+  const draft = pendingScan(source, today(), useSettings.getState().homeCurrency);
   const id = await save(draft, retakeId);
   try {
     const imagePaths = await saveReceiptImages(id, pages);
     const qr = await findGibQr(pages);
-    const withImages = { ...draft, imagePaths };
-    await save(qr ? applyGibQr(withImages, qr) : awaitingReview(draft, imagePaths), id);
+    const withImages: ReceiptInput = qr ? applyGibQr({ ...draft, imagePaths }, qr) : { ...draft, imagePaths };
+
+    let text = '';
+    try {
+      text = await recognizePages(pages);
+    } catch {
+      text = '';
+    }
+
+    if (!isReadable(text)) {
+      // A QR alone is still a usable receipt; otherwise ask for a retake or manual entry.
+      await save(qr ? withImages : { ...withImages, status: 'failed' }, id);
+      return id;
+    }
+    await save({ ...withImages, ocrText: text, status: 'queued' }, id);
+    enqueueReceipt(id);
   } catch {
     await save({ ...draft, status: 'failed' }, id);
   }
   return id;
 }
 
-/** A receipt from a QR scanned on its own (no photo). Returns its id. */
+/** A receipt from a QR scanned on its own (no photo, so no OCR): the person adds the merchant. */
 export async function ingestQr(qr: GibQr): Promise<string> {
-  const draft = pendingScan('scan', toISODate(new Date()), useSettings.getState().homeCurrency);
-  return useReceipts.getState().save(applyGibQr(draft, qr));
+  return useReceipts.getState().save(applyGibQr(pendingScan('scan', today(), useSettings.getState().homeCurrency), qr));
+}
+
+function qrFromReceipt(r: Receipt): GibQr {
+  return {
+    ettn: r.ettn,
+    documentNumber: r.documentNumber,
+    date: r.date,
+    totalMinor: r.totalMinor,
+    currency: r.currency,
+    taxes: r.taxes,
+    sellerTaxId: null,
+    scenario: null,
+    type: null,
+  };
+}
+
+function toInput(r: Receipt): ReceiptInput {
+  const { id: _id, merchantNormalized: _m, createdAt: _c, updatedAt: _u, ...input } = r;
+  return input;
+}
+
+const QUOTA_NOTICE_KEY = 'quotaNoticeMonth';
+
+function noticeQuotaOnce() {
+  const month = today().slice(0, 7);
+  if (Storage.getItemSync(QUOTA_NOTICE_KEY) === month) return;
+  Storage.setItemSync(QUOTA_NOTICE_KEY, month);
+  // TODO(M7): show the Slipbird Pro paywall here instead.
+  Alert.alert(i18n.t('quota.title'), i18n.t('quota.body'));
+}
+
+/** Parses one queued receipt. `retry` keeps it queued with backoff (offline, provider busy). */
+export async function processQueuedReceipt(receiptId: string): Promise<QueueOutcome> {
+  const db = getDb();
+  const receipt = await getReceipt(db, receiptId);
+  // Deleted, or already filled in by the person while it waited.
+  if (!receipt || receipt.status !== 'queued' || !receipt.ocrText) return 'done';
+
+  const locale = getLocales()[0];
+  const result = await parseReceiptText({
+    text: fitForParser(receipt.ocrText),
+    locale: locale?.languageTag ?? i18n.language,
+    deviceCurrency: useSettings.getState().homeCurrency,
+    countryHint: locale?.regionCode ?? null,
+  });
+
+  const { save } = useReceipts.getState();
+  // The person may have edited it meanwhile; only fill it if it's still waiting.
+  const current = await getReceipt(db, receiptId);
+  if (!current || current.status !== 'queued') return 'done';
+
+  if (!result.ok) {
+    if (isRetryable(result.error)) return 'retry';
+    if (result.error === 'quota_exceeded') noticeQuotaOnce();
+    await save({ ...toInput(current), status: 'needs_review', fieldConfidence: unparsedConfidence(current.fieldConfidence) }, receiptId);
+    return 'done';
+  }
+
+  let normalized = normalizeParsedReceipt(result.receipt, {
+    today: today(),
+    deviceCurrency: useSettings.getState().homeCurrency,
+    locale: i18n.language,
+  });
+  if (current.source === 'gib_qr') normalized = mergeGibQr(normalized, qrFromReceipt(current));
+
+  const rule = categoryFromRule(await getMerchantRule(db, normalized.merchant), normalized.category);
+  const { fieldConfidence, ...fields } = normalized;
+  await save(
+    {
+      ...toInput(current),
+      ...fields,
+      category: rule.category,
+      status: 'needs_review',
+      fieldConfidence: rule.fromRule ? { ...fieldConfidence, category: { confidence: 'high' } } : fieldConfidence,
+    },
+    receiptId,
+  );
+  return 'done';
 }
 
 /** Scan actions for the scan button, its long-press menu, and the failed-receipt retake. */

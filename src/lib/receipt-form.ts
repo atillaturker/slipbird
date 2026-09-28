@@ -41,7 +41,7 @@ export function validateReceiptForm(
   form: ReceiptForm,
   today: string,
   locale: string,
-): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time'> } | { ok: false; errors: ReceiptFormErrors } {
+): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time' | 'fieldConfidence'> } | { ok: false; errors: ReceiptFormErrors } {
   const errors: ReceiptFormErrors = { items: {}, taxes: {} };
   let failed = false;
   const fail = () => {
@@ -140,4 +140,12 @@ export function receiptToForm(receipt: Receipt, locale: string): ReceiptForm {
     items: receipt.items.map((i) => ({ name: i.name, qty: i.qty === null ? '' : formatDecimal(i.qty, locale), amount: money(i.amountMinor) })),
     taxes: receipt.taxes.map((t) => ({ rate: t.rate === null ? '' : formatDecimal(t.rate, locale), amount: money(t.amountMinor) })),
   };
+}
+
+/** Where the person has to look after a failed save: the Items tab only when errors are there alone. */
+export function errorLocation(errors: ReceiptFormErrors): { tab: 'receipt' | 'items'; openTaxes: boolean } {
+  const receiptError = !!(errors.merchant || errors.date || errors.total);
+  const taxError = Object.keys(errors.taxes).length > 0;
+  const itemError = Object.keys(errors.items).length > 0;
+  return { tab: !receiptError && !taxError && itemError ? 'items' : 'receipt', openTaxes: taxError };
 }

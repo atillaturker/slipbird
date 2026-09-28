@@ -62,6 +62,11 @@ export const migrations: readonly string[] = [
     updatedAt TEXT NOT NULL
   );
   `,
+  // 2 — per-field confidence for the review screen (JSON, null once confirmed) + duplicate lookup.
+  `
+  ALTER TABLE receipts ADD COLUMN fieldConfidence TEXT;
+  CREATE INDEX receipts_duplicate ON receipts (merchantNormalized, totalMinor, date);
+  `,
 ];
 
 /** The migrations still to run for a database at `version`, with the version each one sets. */

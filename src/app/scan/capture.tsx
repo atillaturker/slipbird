@@ -43,8 +43,8 @@ export default function QrCaptureScreen() {
     busy.current = true;
     void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
     const id = await ingestQr(qr);
-    // The merchant isn't in the QR: open the form so the person can add it.
-    router.replace({ pathname: '/receipt/new', params: { id } });
+    // The merchant isn't in the QR: open review so the person can add it.
+    router.replace({ pathname: '/scan/review', params: { id } });
   };
 
   const closeButton = (

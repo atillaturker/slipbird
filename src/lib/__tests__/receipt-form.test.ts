@@ -1,4 +1,4 @@
-import { emptyReceiptForm, receiptToForm, validateReceiptForm, type ReceiptForm } from '../receipt-form';
+import { emptyReceiptForm, errorLocation, receiptToForm, validateReceiptForm, type ReceiptForm } from '../receipt-form';
 import type { Receipt } from '../types';
 
 const today = '2026-10-12';
@@ -26,6 +26,7 @@ const savedReceipt = (): Receipt => ({
   ettn: null,
   documentNumber: null,
   imagePaths: [],
+  fieldConfidence: null,
   items: [{ name: 'Peynir', qty: 0.45, amountMinor: 21200 }],
   taxes: [{ rate: 10, amountMinor: 1927 }],
   createdAt: '',
@@ -111,5 +112,14 @@ describe('receiptToForm', () => {
       'tr',
     );
     expect(form.total).toBe('');
+  });
+});
+
+describe('errorLocation', () => {
+  const none = { items: {}, taxes: {} };
+  it('points at the tab holding the errors', () => {
+    expect(errorLocation({ ...none, total: 'totalRequired' })).toEqual({ tab: 'receipt', openTaxes: false });
+    expect(errorLocation({ ...none, items: { 0: { name: 'itemNameRequired' } } })).toEqual({ tab: 'items', openTaxes: false });
+    expect(errorLocation({ ...none, taxes: { 0: { rate: 'rateInvalid' } } })).toEqual({ tab: 'receipt', openTaxes: true });
   });
 });

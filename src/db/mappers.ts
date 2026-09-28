@@ -1,5 +1,6 @@
 import { categoryOrder, type Category } from '@/theme';
 
+import type { FieldConfidence } from '@/lib/receipt-normalize';
 import { paymentMethods, type PaymentMethod, type Receipt, type ReceiptItem, type ReceiptSource, type ReceiptStatus, type ReceiptSummary, type ReceiptTax } from '@/lib/types';
 
 /** Row shapes as SQLite returns them. */
@@ -20,6 +21,7 @@ export type ReceiptRow = {
   ettn: string | null;
   documentNumber: string | null;
   imagePaths: string;
+  fieldConfidence: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -51,6 +53,16 @@ export function parseImagePaths(json: string): string[] {
   }
 }
 
+export function parseFieldConfidence(json: string | null): FieldConfidence | null {
+  if (!json) return null;
+  try {
+    const value: unknown = JSON.parse(json);
+    return value && typeof value === 'object' && !Array.isArray(value) ? (value as FieldConfidence) : null;
+  } catch {
+    return null;
+  }
+}
+
 export function rowToSummary(row: ReceiptSummaryRow): ReceiptSummary {
   return {
     id: row.id,
@@ -63,6 +75,7 @@ export function rowToSummary(row: ReceiptSummaryRow): ReceiptSummary {
     source: oneOf(sources, row.source, 'manual'),
     status: oneOf(statuses, row.status, 'saved'),
     imagePaths: parseImagePaths(row.imagePaths),
+    fieldConfidence: parseFieldConfidence(row.fieldConfidence),
   };
 }
 

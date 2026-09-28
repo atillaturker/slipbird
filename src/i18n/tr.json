@@ -153,7 +153,8 @@
     "eArsiv": "e-Arşiv",
     "needsReview": "Kontrol gerekli",
     "queued": "Çevrimdışı — sırada",
-    "failed": "Okunamadı"
+    "failed": "Okunamadı",
+    "readyToSave": "Kaydetmeye hazır"
   },
   "payment": {
     "card": "Kart",
@@ -244,5 +245,50 @@
     "page": "Sayfa {{n}} / {{count}}",
     "open": "{{n}}. sayfayı aç",
     "close": "Kapat"
+  },
+  "review": {
+    "title": "Fişi kontrol et",
+    "save": "Fişi kaydet",
+    "delete": "Taramayı sil",
+    "merchant": "İşletme",
+    "date": "Tarih",
+    "total": "Toplam",
+    "currency": "Para birimi",
+    "category": "Kategori",
+    "payment": "Ödeme yöntemi",
+    "note": "Not",
+    "tabReceipt": "Fiş",
+    "tabItems": "Ürünler",
+    "pickCategory": "Bir kategori seçin",
+    "done": "Bitti",
+    "changeValue": "{{label}} değiştir",
+    "flags": {
+      "merchantMissing": "Mağaza adını ekleyin",
+      "merchantCheck": "Mağaza adını kontrol edin",
+      "dateMissing": "Tarihi kontrol edin",
+      "dateFuture": "Bu tarih gelecekte",
+      "dateOld": "Bu tarih bir yıldan eski",
+      "dateCheck": "Tarihi kontrol edin",
+      "totalMissing": "Toplamı ekleyin",
+      "totalNotPositive": "Toplamı kontrol edin",
+      "itemsMismatch": "Ürünlerin toplamı bu tutarı tutmuyor",
+      "totalCheck": "Toplamı kontrol edin",
+      "currencyCheck": "Para birimini kontrol edin",
+      "categoryCheck": "Kategoriyi kontrol edin"
+    },
+    "processing": "Bu fiş hâlâ okunuyor. Kendiniz doldurabilir ya da bekleyebilirsiniz."
+  },
+  "duplicate": {
+    "title": "Bu fişi daha önce kaydetmiş gibisiniz",
+    "body": "{{merchant}}, {{date}}, {{amount}}",
+    "saveAnyway": "Yine de kaydet",
+    "discard": "Vazgeç ve sil"
+  },
+  "quota": {
+    "title": "Bu ayın ücretsiz taramaları bitti",
+    "body": "Fişleri elle eklemeye devam edebilirsiniz. Taramalar gelecek ay yeniden okunur."
+  },
+  "zoom": {
+    "hint": "Yakınlaştırmak için iki parmakla açın, sıfırlamak için iki kez dokunun"
   }
 }

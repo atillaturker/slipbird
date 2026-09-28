@@ -1,20 +1,19 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
-import { Trash } from 'phosphor-react-native';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, View } from 'react-native';
+import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Chip, EmptyState, SegmentedControl, TextField } from '@/components';
 import { CurrencyButton } from '@/components/CurrencyButton';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { DateField } from '@/components/DateField';
-import { Disclosure } from '@/components/Disclosure';
 import { FieldLabel } from '@/components/FieldLabel';
-import { IconButton } from '@/components/IconButton';
+import { ItemsEditor } from '@/components/ItemsEditor';
 import { ReceiptPages } from '@/components/ReceiptPages';
+import { TaxLinesEditor } from '@/components/TaxLinesEditor';
 import { currencySymbol } from '@/lib/money';
-import type { ReceiptFormError } from '@/lib/receipt-form';
+import { errorLocation, type ReceiptFormError } from '@/lib/receipt-form';
 import { paymentMethods, type PaymentMethod } from '@/lib/types';
 import { useReceiptForm } from '@/store/use-receipt-form';
 import { categoryOrder, useTheme } from '@/theme';
@@ -24,7 +23,7 @@ type Tab = 'receipt' | 'items';
 export default function ManualEntryScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t, i18n } = useTranslation();
-  const { colors, space, type } = useTheme();
+  const { colors, space } = useTheme();
   const insets = useSafeAreaInsets();
   const receiptForm = useReceiptForm(id);
   const { form, errors, saving, homeCurrency, setField } = receiptForm;
@@ -65,11 +64,10 @@ export default function ManualEntryScreen() {
     try {
       const result = await receiptForm.submit();
       if (!result.ok) {
-        const receiptTabError = result.errors.merchant || result.errors.date || result.errors.total;
-        const taxError = Object.keys(result.errors.taxes).length > 0;
-        if (!receiptTabError && !taxError && Object.keys(result.errors.items).length > 0) setTab('items');
-        else setTab('receipt');
-        if (taxError) setTaxesOpen(true);
+        if (!('errors' in result)) return;
+        const where = errorLocation(result.errors);
+        setTab(where.tab);
+        if (where.openTaxes) setTaxesOpen(true);
         return;
       }
       if (id) router.back();
@@ -136,73 +134,28 @@ export default function ManualEntryScreen() {
               />
             </View>
 
-            <View style={{ gap: space[3] }}>
-              <Disclosure
-                title={form.taxes.length ? t('receiptForm.taxesCount', { count: form.taxes.length }) : t('receiptForm.taxes')}
-                open={taxesOpen}
-                onToggle={() => setTaxesOpen((o) => !o)}
-              />
-              {taxesOpen && (
-                <>
-                  {form.taxes.map((tax, i) => (
-                    <View key={i} style={{ flexDirection: 'row', alignItems: 'flex-end', gap: space[3] }}>
-                      <View style={{ flex: 2 }}>
-                        <TextField label={t('receiptForm.taxRate')} value={tax.rate} figure error={err(errors.taxes[i]?.rate)} onChangeText={(v) => receiptForm.updateTax(i, { rate: v })} />
-                      </View>
-                      <View style={{ flex: 3 }}>
-                        <TextField
-                          label={t('receiptForm.taxAmount')}
-                          value={tax.amount}
-                          prefix={symbol}
-                          figure
-                          error={err(errors.taxes[i]?.amount)}
-                          onChangeText={(v) => receiptForm.updateTax(i, { amount: v })}
-                        />
-                      </View>
-                      <IconButton icon={Trash} label={t('receiptForm.removeTax', { n: i + 1 })} tone="muted" onPress={() => receiptForm.removeTax(i)} />
-                    </View>
-                  ))}
-                  <Button variant="ghost" size="md" onPress={receiptForm.addTax}>
-                    {t('receiptForm.addTax')}
-                  </Button>
-                </>
-              )}
-            </View>
+            <TaxLinesEditor
+              taxes={form.taxes}
+              errors={errors.taxes}
+              symbol={symbol}
+              open={taxesOpen}
+              onToggle={() => setTaxesOpen((o) => !o)}
+              onChange={receiptForm.updateTax}
+              onAdd={receiptForm.addTax}
+              onRemove={receiptForm.removeTax}
+            />
 
             <TextField label={t('receiptForm.note')} value={form.note} placeholder={t('receiptForm.notePlaceholder')} onChangeText={(v) => setField('note', v)} />
           </>
         ) : (
-          <View style={{ gap: space[4] }}>
-            {form.items.length === 0 && <Text style={[type.body, { color: colors.inkMuted }]}>{t('receiptForm.noItems')}</Text>}
-            {form.items.map((item, i) => (
-              <View key={i} style={{ gap: space[2], paddingBottom: space[4], borderBottomWidth: 1, borderBottomColor: colors.rule }}>
-                <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: space[3] }}>
-                  <View style={{ flex: 1 }}>
-                    <TextField label={t('receiptForm.itemName')} value={item.name} error={err(errors.items[i]?.name)} onChangeText={(v) => receiptForm.updateItem(i, { name: v })} />
-                  </View>
-                  <IconButton icon={Trash} label={t('receiptForm.removeItem', { n: i + 1 })} tone="muted" onPress={() => receiptForm.removeItem(i)} />
-                </View>
-                <View style={{ flexDirection: 'row', gap: space[3] }}>
-                  <View style={{ flex: 2 }}>
-                    <TextField label={t('receiptForm.itemQty')} value={item.qty} figure error={err(errors.items[i]?.qty)} onChangeText={(v) => receiptForm.updateItem(i, { qty: v })} />
-                  </View>
-                  <View style={{ flex: 3 }}>
-                    <TextField
-                      label={t('receiptForm.itemAmount')}
-                      value={item.amount}
-                      prefix={symbol}
-                      figure
-                      error={err(errors.items[i]?.amount)}
-                      onChangeText={(v) => receiptForm.updateItem(i, { amount: v })}
-                    />
-                  </View>
-                </View>
-              </View>
-            ))}
-            <Button variant="secondary" size="md" onPress={receiptForm.addItem}>
-              {t('receiptForm.addItem')}
-            </Button>
-          </View>
+          <ItemsEditor
+            items={form.items}
+            errors={errors.items}
+            symbol={symbol}
+            onChange={receiptForm.updateItem}
+            onAdd={receiptForm.addItem}
+            onRemove={receiptForm.removeItem}
+          />
         )}
 
         <Button block disabled={saving} onPress={() => void onSave()}>

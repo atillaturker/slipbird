@@ -1,4 +1,5 @@
 import type { GibQr } from './gib-qr';
+import { gibQrConfidence } from './receipt-normalize';
 import type { ReceiptInput } from './types';
 
 /** The row that appears the moment a capture starts: `processing`, no fields yet. */
@@ -18,6 +19,7 @@ export function pendingScan(source: 'scan' | 'import', today: string, currency: 
     ettn: null,
     documentNumber: null,
     imagePaths: [],
+    fieldConfidence: null,
     items: [],
     taxes: [],
   };
@@ -38,6 +40,7 @@ export function applyGibQr(draft: ReceiptInput, qr: GibQr): ReceiptInput {
     taxes: qr.taxes,
     ettn: qr.ettn,
     documentNumber: qr.documentNumber,
+    fieldConfidence: gibQrConfidence(!!draft.merchant),
   };
 }
 

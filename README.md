@@ -1,56 +1,56 @@
-# Welcome to your Expo app 👋
+# Slipbird
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Receipt and e-invoice scanner with spending analysis, for iOS and Android (Expo, English and Turkish).
+Receipt images stay on the device; only OCR text is sent to our parser. See `docs/SPEC.md` for the product spec
+and `docs/COMPONENTS.md` for the design-system components.
 
-## Get started
+## App
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+Needs a development build (native modules don't run in Expo Go).
 
 ```bash
-npm run reset-project
+npm install
+cp .env.example .env.local        # then fill in the Supabase URL and anon key
+npx expo run:android               # or: npx expo run:ios
+npx expo start --dev-client        # later runs
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Checks: `npx tsc --noEmit`, `npx expo lint`, `npx jest`.
 
-### Other setup steps
+## Backend (Supabase)
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+One Edge Function, `parse-receipt`, plus a quota table. The LLM provider is chosen with `PARSER_PROVIDER`
+(Gemini today) and `PARSER_MODEL`; the provider key lives only in function secrets.
 
-## Learn more
+### Local
 
-To learn more about developing your project with Expo, look at the following resources:
+Requires Docker Desktop running. The Supabase CLI runs through `npx`.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npx supabase start                                   # prints the API URL and anon key
+cp supabase/functions/.env.example supabase/functions/.env
+# set GEMINI_API_KEY (https://aistudio.google.com/apikey) and PARSER_MODEL — the current
+# Flash-Lite id from https://ai.google.dev/gemini-api/docs/models
+npx supabase functions serve parse-receipt --env-file supabase/functions/.env
+```
 
-## Join the community
+Point the app at it in `.env.local` (`EXPO_PUBLIC_SUPABASE_URL=http://<your computer's LAN IP>:54321`,
+or `http://10.0.2.2:54321` from the Android emulator), then restart Metro.
 
-Join our community of developers creating universal apps.
+Function tests (Deno, no install needed):
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+cd supabase/functions/parse-receipt && npx deno test --allow-env --config deno.json .
+```
+
+### Hosted
+
+```bash
+npx supabase login
+npx supabase link --project-ref <ref>
+npx supabase db push
+npx supabase secrets set PARSER_PROVIDER=gemini PARSER_MODEL=<model id> GEMINI_API_KEY=<key>
+npx supabase functions deploy parse-receipt
+```
+
+Enable anonymous sign-ins in the dashboard (Authentication → Providers) for the hosted project.

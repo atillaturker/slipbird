@@ -1,5 +1,7 @@
 import type { Category } from '@/theme';
 
+import type { FieldConfidence } from './receipt-normalize';
+
 export type ReceiptSource = 'scan' | 'gib_qr' | 'manual' | 'import';
 export type ReceiptStatus = 'processing' | 'needs_review' | 'saved' | 'failed' | 'queued';
 export type PaymentMethod = 'card' | 'cash' | 'other';
@@ -33,6 +35,8 @@ export type ReceiptInput = {
   ettn: string | null;
   documentNumber: string | null;
   imagePaths: string[];
+  /** Per-field confidence from parsing; null for manual entries and once the person has saved. */
+  fieldConfidence: FieldConfidence | null;
   items: ReceiptItem[];
   taxes: ReceiptTax[];
 };
@@ -47,5 +51,5 @@ export type Receipt = ReceiptInput & {
 /** The columns a list row needs. */
 export type ReceiptSummary = Pick<
   Receipt,
-  'id' | 'merchant' | 'date' | 'time' | 'totalMinor' | 'currency' | 'category' | 'source' | 'status' | 'imagePaths'
+  'id' | 'merchant' | 'date' | 'time' | 'totalMinor' | 'currency' | 'category' | 'source' | 'status' | 'imagePaths' | 'fieldConfidence'
 >;

@@ -7,6 +7,11 @@ describe('receiptBadge', () => {
     expect(receiptBadge({ source: 'scan', status: 'failed' })).toEqual({ tone: 'neutral', label: 'failed' });
   });
 
+  it('says ready to save when every parsed field is high', () => {
+    expect(receiptBadge({ source: 'scan', status: 'needs_review', fieldConfidence: { total: { confidence: 'high' } } })).toEqual({ tone: 'neutral', label: 'readyToSave' });
+    expect(receiptBadge({ source: 'scan', status: 'needs_review', fieldConfidence: { total: { confidence: 'low', reason: 'missing' } } })).toEqual({ tone: 'review', label: 'needsReview' });
+  });
+
   it('shows the source for saved receipts', () => {
     expect(receiptBadge({ source: 'gib_qr', status: 'saved' })).toEqual({ tone: 'verified', label: 'eArsiv' });
     expect(receiptBadge({ source: 'manual', status: 'saved' })).toEqual({ tone: 'neutral', label: 'manual' });

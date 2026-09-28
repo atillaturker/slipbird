@@ -2,9 +2,11 @@ import { useEffect, useState } from 'react';
 import { create } from 'zustand';
 
 import { getDb } from '@/db';
+import { saveMerchantRule } from '@/db/merchant-rules';
 import { deleteReceipt, getReceipt, hasReceipts, listReceipts, saveReceipt } from '@/db/receipts';
 import type { Receipt, ReceiptInput, ReceiptSummary } from '@/lib/types';
 import { deleteReceiptImages } from '@/services/images';
+import { removeFromQueue } from '@/services/scan-queue';
 import type { Category } from '@/theme';
 
 type ReceiptsState = {
@@ -50,6 +52,8 @@ export const useReceipts = create<ReceiptsState>((set, get) => ({
 
   save: async (input, id) => {
     const savedId = await saveReceipt(getDb(), input, id);
+    // A confirmed receipt teaches its merchant's category (docs/SPEC.md §1.6).
+    if (input.status === 'saved') await saveMerchantRule(getDb(), input.merchant, input.category);
     set((s) => ({ revision: s.revision + 1 }));
     await get().refresh();
     return savedId;
@@ -58,6 +62,7 @@ export const useReceipts = create<ReceiptsState>((set, get) => ({
   remove: async (id) => {
     set((s) => ({ list: s.list.filter((r) => r.id !== id) }));
     await deleteReceipt(getDb(), id);
+    removeFromQueue(id);
     try {
       deleteReceiptImages(id);
     } catch {

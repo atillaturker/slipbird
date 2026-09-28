@@ -112,8 +112,8 @@ export default function ReceiptsScreen() {
               processing={item.status === 'processing'}
               thumbnailUri={thumbnailUri(item.id, item.imagePaths)}
               onPress={() =>
-                item.status === 'needs_review'
-                  ? router.push({ pathname: '/receipt/new', params: { id: item.id } })
+                item.status === 'needs_review' || item.status === 'queued'
+                  ? router.push({ pathname: '/scan/review', params: { id: item.id } })
                   : router.push({ pathname: '/receipt/[id]', params: { id: item.id } })
               }
               onDelete={() => void remove(item.id)}
