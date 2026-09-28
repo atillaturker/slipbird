@@ -1,0 +1,7 @@
+{
+  "ios": {
+    "CFBundleDisplayName": "Slipbird",
+    "NSCameraUsageDescription": "Slipbird, fişleri ve fatura QR kodlarını taramak için kamerayı kullanır. Fotoğraflar bu cihazda kalır.",
+    "NSPhotoLibraryUsageDescription": "Slipbird, fiş fotoğraflarını kitaplığınızdan içe aktarmanıza izin verir. Fotoğraflar bu cihazda kalır."
+  }
+}
