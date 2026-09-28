@@ -340,10 +340,6 @@
     "saveAnyway": "Yine de kaydet",
     "discard": "Vazgeç ve sil"
   },
-  "quota": {
-    "title": "Bu ayın ücretsiz taramaları bitti",
-    "body": "Fişleri elle eklemeye devam edebilirsiniz. Taramalar gelecek ay yeniden okunur."
-  },
   "zoom": {
     "hint": "Yakınlaştırmak için iki parmakla açın, sıfırlamak için iki kez dokunun"
   },
@@ -396,15 +392,16 @@
     "version": "Sürüm"
   },
   "privacy": {
-    "draft": "Taslak — nihai politika yayından önce yayımlanır.",
+    "draft": "Son güncelleme: 29 Eylül 2026",
     "s1Title": "Fişleriniz telefonunuzda kalır",
     "s1Body": "Fişler, fotoğraflar, bütçeler ve ayarlar yalnızca bu telefonda saklanır. Slipbird’de hesap ya da bulut eşitleme yoktur.",
     "s2Title": "Fotoğraflar telefonunuzdan çıkmaz",
     "s2Body": "Fiş fotoğrafları telefonunuzda okunur. Alanları doldurmak için ayrıştırıcımıza yalnızca fişte bulunan metin gönderilir.",
     "s3Title": "Ayrıştırıcı ne görür, ne saklar",
-    "s3Body": "Metin, onu okuyan bir yapay zekâ hizmetine iletilir ve Slipbird tarafından saklanmaz. Yalnızca teknik bir kayıt tutarız: anonim bir kimlik, zaman, isteğin süresi ve kullanılan belirteç sayısı.",
+    "s3Body": "Metin, onu okuyan bir yapay zekâ hizmetine (Groq ya da Google Gemini) iletilir ve Slipbird tarafından saklanmaz. Google, ücretsiz katmanı üzerinden gönderilen metni ürünlerini geliştirmek için kullanabilir. Yalnızca teknik bir kayıt tutarız: anonim bir kimlik, zaman, isteğin süresi ve kullanılan belirteç sayısı.",
     "s4Title": "Verilerinizi istediğiniz zaman silin",
-    "s4Body": "Ayarlar → Tüm verileri sil, Slipbird’ün bu telefonda tuttuğu her şeyi kaldırır."
+    "s4Body": "Ayarlar → Tüm verileri sil, Slipbird’ün bu telefonda tuttuğu her şeyi kaldırır.",
+    "online": "Politikanın tamamını çevrimiçi oku"
   },
   "export": {
     "title": "Dışa aktar",
@@ -441,7 +438,8 @@
     "colMerchant": "İşletme",
     "colCategory": "Kategori",
     "colAmount": "Tutar",
-    "nothingThisMonth": "Bu ay hiçbir şey yok"
+    "nothingThisMonth": "Bu ay hiçbir şey yok",
+    "pdfPro": "PDF rapor · Pro"
   },
   "filters": {
     "title": "Filtreler",
@@ -468,5 +466,39 @@
     },
     "show": "Fişleri göster",
     "clear": "Filtreleri kaldır"
+  },
+  "pro": {
+    "label": "Slipbird Pro",
+    "on": "Etkin",
+    "title": "Slipbird Pro",
+    "tagline": "Slipbird’ün yapabildiği her şey, sınırsız.",
+    "why_scans": "Bu ayın ücretsiz taramalarını kullandınız.",
+    "why_pdfReport": "PDF raporlar Pro’ya dahildir.",
+    "why_moreBudgets": "Ücretsiz sürüm 3 kategori için bütçe içerir.",
+    "benefitScans": "Sınırsız fiş tarama",
+    "benefitPdf": "Aylık PDF raporlar",
+    "benefitBudgets": "Her kategori için bütçe",
+    "monthly": "Aylık",
+    "yearly": "Yıllık",
+    "perMonth": "{{price}} / ay",
+    "perYear": "{{price}} / yıl",
+    "save": "%{{percent}} tasarruf",
+    "continue": "Devam",
+    "restore": "Satın alımları geri yükle",
+    "restored": "Satın alımlar geri yüklendi",
+    "nothingToRestore": "Geri yüklenecek satın alım bulunamadı",
+    "active": "Slipbird Pro’nuz var",
+    "activeBody": "Teşekkürler. Her şey açık.",
+    "manage": "Aboneliği yönet",
+    "unavailable": "Satın alma şu anda kullanılamıyor",
+    "unavailableBody": "Bağlantınızı kontrol edip tekrar deneyin.",
+    "notInBuild": "Bu sürümde satın alma kurulu değil.",
+    "retry": "Tekrar dene",
+    "failed": "Satın alma tamamlanmadı. Ücret alınmadı.",
+    "legal": "Ödeme mağaza hesabınızdan alınır. Abonelik, dönem bitmeden en az 24 saat önce iptal edilmezse otomatik yenilenir. Mağaza hesap ayarlarınızdan yönetebilir veya iptal edebilirsiniz.",
+    "privacy": "Gizlilik politikası",
+    "terms": "Kullanım koşulları",
+    "get": "Slipbird Pro’yu edin",
+    "devToggle": "Geliştirici: Pro açıkmış gibi davran"
   }
 }

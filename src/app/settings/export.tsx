@@ -10,6 +10,7 @@ import { FormScreen } from '@/components/FormScreen';
 import { monthTitle } from '@/lib/dates';
 import { isValidRange, presetRange, recentMonths, type RangePreset } from '@/lib/export-range';
 import { exportCsv, exportMonthlyPdf, type ExportResult } from '@/services/export';
+import { useProGate } from '@/store/pro';
 import { useSettings } from '@/store/settings';
 import { useTheme } from '@/theme';
 
@@ -30,13 +31,16 @@ export default function ExportScreen() {
   const [month, setMonth] = useState(months[0].month);
   const [busy, setBusy] = useState(false);
 
-  const formatLabels: Record<Format, string> = { csv: t('export.csv'), pdf: t('export.pdf') };
+  const { isPro, requirePro } = useProGate();
+  const formatLabels: Record<Format, string> = { csv: t('export.csv'), pdf: isPro ? t('export.pdf') : t('export.pdfPro') };
   const presetLabel = (p: RangePreset) => ({ thisMonth: t('export.thisMonth'), lastMonth: t('export.lastMonth'), thisYear: t('export.thisYear'), all: t('export.allTime'), custom: t('export.custom') })[p];
   const range = presetRange(preset, new Date(), { from, to });
   const rangeError = format === 'csv' && !isValidRange(range) ? t('export.rangeInvalid') : undefined;
 
   const run = async () => {
     if (rangeError) return;
+    // PDF reports are part of Pro.
+    if (format === 'pdf' && !requirePro('pdfReport')) return;
     setBusy(true);
     try {
       const result: ExportResult = format === 'csv' ? await exportCsv(range) : await exportMonthlyPdf(month);

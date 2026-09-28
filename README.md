@@ -17,6 +17,10 @@ npx expo start --dev-client        # later runs
 
 Checks: `npx tsc --noEmit`, `npx expo lint`, `npx jest`.
 
+## Releasing
+
+See `docs/RELEASE.md` for store setup, RevenueCat, EAS builds and the pre-submit checklist.
+
 ## Backend (Supabase)
 
 One Edge Function, `parse-receipt`, plus a quota table. `PARSER_PROVIDER` is an ordered fallback chain

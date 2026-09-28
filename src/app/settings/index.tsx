@@ -16,6 +16,7 @@ import { wipeAllData } from '@/services/wipe';
 import { useBudgets } from '@/store/budgets';
 import { useReceipts } from '@/store/receipts';
 import { useSettings } from '@/store/settings';
+import { useIsPro, useProStore } from '@/store/pro';
 import { useSpending } from '@/store/spending';
 import { useTheme } from '@/theme';
 
@@ -27,6 +28,9 @@ export default function SettingsScreen() {
   const insets = useSafeAreaInsets();
   const { language, setLanguage, homeCurrency, setHomeCurrency, budgetAlerts, setBudgetAlerts } = useSettings();
   const [currencyOpen, setCurrencyOpen] = useState(false);
+  const isPro = useIsPro();
+  const devPro = useProStore((s) => s.devPro);
+  const setDevPro = useProStore((s) => s.setDevPro);
 
   const languageLabels: Record<LanguageSetting, string> = { system: t('settings.system'), en: 'English', tr: 'Türkçe' };
 
@@ -60,6 +64,16 @@ export default function SettingsScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[6], gap: space[6] }}>
       <Stack.Screen options={{ title: t('settings.title') }} />
+
+      <ListGroup>
+        <SettingsRow label={t('pro.label')} value={isPro ? t('pro.on') : undefined} onPress={() => router.push('/paywall')} />
+        {__DEV__ ? (
+          <SettingsRow
+            label={t('pro.devToggle')}
+            accessory={<Switch accessibilityLabel={t('pro.devToggle')} value={devPro} onValueChange={setDevPro} trackColor={{ false: colors.ruleStrong, true: colors.stamp }} thumbColor={colors.paperRaised} />}
+          />
+        ) : null}
+      </ListGroup>
 
       <Section title={t('settings.general')}>
         <ListGroup>

@@ -340,10 +340,6 @@
     "saveAnyway": "Save anyway",
     "discard": "Discard"
   },
-  "quota": {
-    "title": "This month’s free scans are used",
-    "body": "You can still add receipts by hand. Scans are read again from next month."
-  },
   "zoom": {
     "hint": "Pinch to zoom, double-tap to reset"
   },
@@ -396,15 +392,16 @@
     "version": "Version"
   },
   "privacy": {
-    "draft": "Draft — the final policy is published before release.",
+    "draft": "Last updated 29 September 2026",
     "s1Title": "Your receipts stay on your phone",
     "s1Body": "Receipts, photos, budgets and settings are stored on this phone only. Slipbird has no accounts and no cloud sync.",
     "s2Title": "Photos never leave your phone",
     "s2Body": "Receipt photos are read on your phone. Only the text found on a receipt is sent to our parser to fill in the fields.",
     "s3Title": "What the parser sees and keeps",
-    "s3Body": "The text is passed to an AI service that reads it, and is not stored by Slipbird. We keep only a technical log: an anonymous id, the time, how long the request took and how many tokens it used.",
+    "s3Body": "The text is passed to an AI service (Groq or Google Gemini) that reads it, and is not stored by Slipbird. Google may use text sent through its free tier to improve its products. We keep only a technical log: an anonymous id, the time, how long the request took and how many tokens it used.",
     "s4Title": "Delete your data any time",
-    "s4Body": "Settings → Delete all data removes everything Slipbird holds on this phone."
+    "s4Body": "Settings → Delete all data removes everything Slipbird holds on this phone.",
+    "online": "Read the full policy online"
   },
   "export": {
     "title": "Export",
@@ -441,7 +438,8 @@
     "colMerchant": "Merchant",
     "colCategory": "Category",
     "colAmount": "Amount",
-    "nothingThisMonth": "Nothing this month"
+    "nothingThisMonth": "Nothing this month",
+    "pdfPro": "PDF report · Pro"
   },
   "filters": {
     "title": "Filters",
@@ -468,5 +466,39 @@
     },
     "show": "Show receipts",
     "clear": "Clear filters"
+  },
+  "pro": {
+    "label": "Slipbird Pro",
+    "on": "Active",
+    "title": "Slipbird Pro",
+    "tagline": "Everything Slipbird can do, without limits.",
+    "why_scans": "You’ve used this month’s free scans.",
+    "why_pdfReport": "PDF reports are part of Pro.",
+    "why_moreBudgets": "Free includes budgets for 3 categories.",
+    "benefitScans": "Unlimited receipt scans",
+    "benefitPdf": "Monthly PDF reports",
+    "benefitBudgets": "Budgets for every category",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "perMonth": "{{price}} / month",
+    "perYear": "{{price}} / year",
+    "save": "Save {{percent}}%",
+    "continue": "Continue",
+    "restore": "Restore purchases",
+    "restored": "Purchases restored",
+    "nothingToRestore": "No purchases found to restore",
+    "active": "You have Slipbird Pro",
+    "activeBody": "Thank you. Everything is unlocked.",
+    "manage": "Manage subscription",
+    "unavailable": "Purchases aren’t available right now",
+    "unavailableBody": "Check your connection and try again.",
+    "notInBuild": "Purchases aren’t set up in this build.",
+    "retry": "Try again",
+    "failed": "The purchase didn’t go through. You haven’t been charged.",
+    "legal": "Payment is charged to your store account. The subscription renews automatically unless you cancel at least 24 hours before the period ends. You can manage or cancel it in your store account settings.",
+    "privacy": "Privacy policy",
+    "terms": "Terms of use",
+    "get": "Get Slipbird Pro",
+    "devToggle": "Dev: pretend Pro is on"
   }
 }

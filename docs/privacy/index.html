@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slipbird privacy policy · Gizlilik politikası</title>
+<style>
+  :root { color-scheme: light dark; --ink:#121613; --muted:#555c55; --paper:#f2f3ef; --rule:#dfe2dc; --stamp:#0a6446; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#edf1ec; --muted:#a0a9a1; --paper:#0e1210; --rule:#2c332e; --stamp:#5fe0ab; } }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width:44rem; margin:0 auto; padding:2rem 1rem 4rem; }
+  nav { display:flex; gap:1rem; margin-bottom:2rem; }
+  nav a { color:var(--stamp); }
+  h1 { font-size:1.75rem; margin:0 0 .25rem; letter-spacing:-.02em; }
+  h2 { font-size:1.15rem; margin:2rem 0 .5rem; }
+  p, li { margin:.5rem 0; }
+  .meta { color:var(--muted); }
+  section + section { margin-top:3rem; padding-top:2rem; border-top:1px solid var(--rule); }
+  a { color:var(--stamp); }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="#en">English</a><a href="#tr">Türkçe</a></nav>
+
+<section id="en" lang="en">
+  <h1>Slipbird privacy policy</h1>
+  <p class="meta">Last updated 29 September 2026</p>
+  <p>Slipbird scans receipts and e-invoices and shows where your money goes. Your receipts stay on your phone. There is no account to create, no advertising, no tracking and no analytics.</p>
+
+  <h2>What stays on your phone</h2>
+  <p>Receipts, receipt photos (scanned or imported), budgets, saved merchant categories and settings are stored on your phone only. Slipbird has no cloud copy and no sync. Files you export (CSV, PDF) are created on your phone and go only where you share them.</p>
+
+  <h2>What leaves your phone, and why</h2>
+  <ul>
+    <li><strong>Receipt text, to read your receipts.</strong> Photos are read on your phone. Only the text found on a receipt (never the photo) is sent to Slipbird's server, which passes it to an AI service that returns the merchant, date, total and items. We use Groq and Google (Gemini API). Slipbird does not store the text. Google may use text sent through the free tier of its Gemini API to improve its products; see the providers' policies: <a href="https://groq.com/privacy-policy/">Groq</a>, <a href="https://policies.google.com/privacy">Google</a>.</li>
+    <li><strong>An anonymous id.</strong> On first launch the app signs in anonymously (no name, no email) so our server can count the free scans each month. Our server keeps a technical log with that anonymous id, the time, how long a request took and how many tokens it used, and the monthly scan count.</li>
+    <li><strong>Slipbird Pro purchases.</strong> Purchases go through the Apple App Store or Google Play. RevenueCat, our subscription provider, receives the same anonymous id and your purchase status so that Pro unlocks. Slipbird never sees your payment details.</li>
+    <li><strong>Exchange rates.</strong> The app asks Frankfurter (api.frankfurter.dev) for daily exchange rates. Like any web request, this shows your IP address to that service.</li>
+    <li><strong>QR codes.</strong> QR codes on invoices are read on your phone.</li>
+  </ul>
+
+  <h2>Permissions</h2>
+  <p>Camera: to scan receipts and QR codes. Photos: only when you choose to import a receipt photo. Notifications: local budget alerts on your phone; nothing is sent from a server.</p>
+
+  <h2>Your choices</h2>
+  <p>Settings, then Delete all data, removes every receipt, photo, budget and saved category from your phone. The anonymous scan counts and technical logs on our server are not linked to your name or contact details.</p>
+
+  <h2>Children</h2>
+  <p>Slipbird is not directed at children under 13, and we do not knowingly collect their data.</p>
+
+  <h2>Changes and contact</h2>
+  <p>If this policy changes, the new version is published here with a new date. Questions: open an issue at <a href="https://github.com/atillaturker/slipbird/issues">github.com/atillaturker/slipbird/issues</a>.</p>
+</section>
+
+<section id="tr" lang="tr">
+  <h1>Slipbird gizlilik politikası</h1>
+  <p class="meta">Son güncelleme: 29 Eylül 2026</p>
+  <p>Slipbird fişleri ve e-faturaları tarar, paranın nereye gittiğini gösterir. Fişleriniz telefonunuzda kalır. Hesap açmanız gerekmez; reklam, izleme ve analiz yoktur.</p>
+
+  <h2>Telefonunuzda kalanlar</h2>
+  <p>Fişler, fiş fotoğrafları (taranan ya da içe aktarılan), bütçeler, kayıtlı işletme kategorileri ve ayarlar yalnızca telefonunuzda saklanır. Slipbird’ün bulutta kopyası ve eşitlemesi yoktur. Dışa aktardığınız dosyalar (CSV, PDF) telefonunuzda oluşturulur ve yalnızca paylaştığınız yere gider.</p>
+
+  <h2>Telefonunuzdan çıkanlar ve nedenleri</h2>
+  <ul>
+    <li><strong>Fişleri okumak için fiş metni.</strong> Fotoğraflar telefonunuzda okunur. Slipbird’ün sunucusuna yalnızca fişte bulunan metin (fotoğraf asla) gönderilir; sunucu bunu işletme adı, tarih, toplam ve ürünleri döndüren bir yapay zekâ hizmetine iletir. Groq ve Google (Gemini API) kullanıyoruz. Slipbird metni saklamaz. Google, Gemini API’sinin ücretsiz katmanı üzerinden gönderilen metni ürünlerini geliştirmek için kullanabilir; sağlayıcıların politikaları: <a href="https://groq.com/privacy-policy/">Groq</a>, <a href="https://policies.google.com/privacy">Google</a>.</li>
+    <li><strong>Anonim bir kimlik.</strong> İlk açılışta uygulama anonim olarak oturum açar (ad ya da e-posta yok); böylece sunucumuz her ayki ücretsiz taramaları sayabilir. Sunucumuz bu anonim kimliği, zamanı, isteğin ne kadar sürdüğünü, kaç belirteç kullandığını ve aylık tarama sayısını içeren teknik bir kayıt tutar.</li>
+    <li><strong>Slipbird Pro satın alımları.</strong> Satın alımlar Apple App Store ya da Google Play üzerinden yapılır. Abonelik sağlayıcımız RevenueCat, Pro’nun açılması için aynı anonim kimliği ve satın alma durumunuzu alır. Slipbird ödeme bilgilerinizi hiçbir zaman görmez.</li>
+    <li><strong>Döviz kurları.</strong> Uygulama günlük döviz kurlarını Frankfurter’dan (api.frankfurter.dev) ister. Her web isteğinde olduğu gibi bu hizmet IP adresinizi görür.</li>
+    <li><strong>QR kodları.</strong> Faturalardaki QR kodları telefonunuzda okunur.</li>
+  </ul>
+
+  <h2>İzinler</h2>
+  <p>Kamera: fişleri ve QR kodlarını taramak için. Fotoğraflar: yalnızca bir fiş fotoğrafını içe aktarmayı seçtiğinizde. Bildirimler: telefonunuzdaki yerel bütçe uyarıları; sunucudan hiçbir şey gönderilmez.</p>
+
+  <h2>Seçimleriniz</h2>
+  <p>Ayarlar, ardından Tüm verileri sil; telefonunuzdaki her fişi, fotoğrafı, bütçeyi ve kayıtlı kategoriyi kaldırır. Sunucumuzdaki anonim tarama sayıları ve teknik kayıtlar adınıza ya da iletişim bilgilerinize bağlı değildir.</p>
+
+  <h2>Çocuklar</h2>
+  <p>Slipbird 13 yaşın altındaki çocuklara yönelik değildir ve onların verilerini bilerek toplamayız.</p>
+
+  <h2>Değişiklikler ve iletişim</h2>
+  <p>Bu politika değişirse yeni sürüm yeni bir tarihle burada yayımlanır. Sorularınız için <a href="https://github.com/atillaturker/slipbird/issues">github.com/atillaturker/slipbird/issues</a> adresinde bir konu açın.</p>
+</section>
+</main>
+</body>
+</html>

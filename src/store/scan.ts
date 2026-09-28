@@ -103,12 +103,12 @@ function toInput(r: Receipt): ReceiptInput {
 
 const QUOTA_NOTICE_KEY = CACHE_KEYS.quotaNoticeMonth;
 
-function noticeQuotaOnce() {
+/** The first time the free scans run out in a month, offer Pro; after that the review banner carries the offer. */
+function offerProOnce() {
   const month = today().slice(0, 7);
   if (Storage.getItemSync(QUOTA_NOTICE_KEY) === month) return;
   Storage.setItemSync(QUOTA_NOTICE_KEY, month);
-  // TODO(M7): show the Slipbird Pro paywall here instead.
-  Alert.alert(i18n.t('quota.title'), i18n.t('quota.body'));
+  router.push({ pathname: '/paywall', params: { feature: 'scans' } });
 }
 
 /**
@@ -152,7 +152,7 @@ async function parseQueuedReceipt(receiptId: string, attempt: number): Promise<Q
 
   if (!result.ok) {
     if (isRetryable(result.error)) return result.retryAfterMs ? { retryAfterMs: result.retryAfterMs } : 'retry';
-    if (result.error === 'quota_exceeded') noticeQuotaOnce();
+    if (result.error === 'quota_exceeded') offerProOnce();
     // Say why nothing was filled in: the review screen shows it (a silent empty form looks like a bug).
     await save(
       { ...toInput(current), status: 'needs_review', fieldConfidence: unparsedConfidence(current.fieldConfidence), parseIssue: issueFromFailure(result.error) },

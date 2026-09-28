@@ -7,7 +7,9 @@ import { BudgetItem } from '@/components/BudgetItem';
 import { Screen } from '@/components/Screen';
 import { Section } from '@/components/Section';
 import { formatMoney } from '@/lib/money';
+import { canSetBudget } from '@/lib/pro';
 import { useBudgets } from '@/store/budgets';
+import { useProGate } from '@/store/pro';
 import { useSpendingView } from '@/store/use-spending';
 import { categoryOrder, useTheme, type Category } from '@/theme';
 
@@ -16,7 +18,12 @@ export default function BudgetsScreen() {
   const { colors, space, type } = useTheme();
   const view = useSpendingView('month');
   const budgets = useBudgets((s) => s.budgets);
-  const editBudget = (category: Category) => router.push({ pathname: '/budget/[category]', params: { category } });
+  const { isPro, requirePro } = useProGate();
+  const editBudget = (category: Category) => {
+    // Free includes budgets for 3 categories; a fourth needs Pro.
+    if (!canSetBudget(budgets.map((b) => b.category), category, isPro) && !requirePro('moreBudgets')) return;
+    router.push({ pathname: '/budget/[category]', params: { category } });
+  };
   const money = (minor: number) => formatMoney(minor, view.home, i18n.language);
 
   const active = budgets.filter((b) => b.currency === view.home);

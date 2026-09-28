@@ -12,6 +12,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { setupNotifications } from '@/services/notifications';
 import { startScanQueue } from '@/services/scan-queue';
 import { ensureSession } from '@/services/supabase';
+import { startPurchases } from '@/store/pro';
 import { processQueuedReceipt } from '@/store/scan';
 import { useTheme } from '@/theme';
 
@@ -34,7 +35,10 @@ export default function RootLayout() {
 
   // Anonymous session for parse-receipt, and the offline scan queue (retries when back online).
   useEffect(() => {
-    void ensureSession();
+    void ensureSession().then((signedIn) => {
+      // RevenueCat identifies the person by the anonymous Supabase user id, so it starts after sign-in.
+      if (signedIn) void startPurchases();
+    });
     void setupNotifications(i18n.t('budgetAlerts.channel'));
     return startScanQueue(processQueuedReceipt);
   }, []);
@@ -66,6 +70,7 @@ export default function RootLayout() {
           <Stack.Screen name="receipt/new" options={{ ...header, presentation: 'modal' }} />
           <Stack.Screen name="budget/[category]" options={{ ...header, presentation: 'modal' }} />
           <Stack.Screen name="filters" options={{ ...header, presentation: 'modal' }} />
+          <Stack.Screen name="paywall" options={{ ...header, presentation: 'modal' }} />
           <Stack.Screen name="settings/index" options={header} />
           <Stack.Screen name="settings/export" options={header} />
           <Stack.Screen name="settings/privacy" options={header} />

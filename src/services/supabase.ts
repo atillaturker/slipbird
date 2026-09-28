@@ -26,3 +26,13 @@ export async function ensureSession(): Promise<boolean> {
     return false;
   }
 }
+
+/** The anonymous Supabase user id: also RevenueCat's app user id, so the backend can tell who is Pro. */
+export async function getUserId(): Promise<string | null> {
+  if (!supabase) return null;
+  try {
+    return (await supabase.auth.getSession()).data.session?.user.id ?? null;
+  } catch {
+    return null;
+  }
+}

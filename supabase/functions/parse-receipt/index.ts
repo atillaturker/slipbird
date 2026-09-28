@@ -2,10 +2,14 @@
 // Stateless: receipt text is never logged or stored. Logs carry only user id, time, tokens, latency.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+import { createProChecker } from './entitlement.ts';
 import { adaptersFromEnv, createParser } from './providers/index.ts';
 import { NO_DETAILS, ParserError, type ProviderAttempt, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
 import { currentMonth, FREE_MONTHLY_PARSES, quotaEnforced } from './quota.ts';
 import { ParseRequestSchema } from './schema.ts';
+
+// Slipbird Pro subscribers aren't held to the free monthly limit (RevenueCat app user id = Supabase user id).
+const isProUser = createProChecker({ secretKey: Deno.env.get('REVENUECAT_SECRET_KEY'), entitlement: Deno.env.get('REVENUECAT_ENTITLEMENT') || 'pro' });
 
 type ErrorCode = 'bad_request' | 'unauthorized' | 'quota_exceeded' | 'busy' | 'parse_failed' | 'provider_error' | 'config_error';
 
@@ -119,7 +123,10 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (usageError) return fail('config_error');
   const enforced = quotaEnforced(Deno.env);
-  if (enforced && (usageRow?.count ?? 0) >= FREE_MONTHLY_PARSES) {
+  const overLimit = enforced && (usageRow?.count ?? 0) >= FREE_MONTHLY_PARSES;
+  // Only ask RevenueCat when the free limit would otherwise refuse this request.
+  const pro = overLimit && (await isProUser(userId));
+  if (overLimit && !pro) {
     log({ userId, outcome: 'quota_exceeded', quotaUsed: usageRow?.count ?? null, startedAt });
     return fail('quota_exceeded');
   }
@@ -141,7 +148,7 @@ Deno.serve(async (req) => {
     // Count only successful parses against the quota.
     const { data: quotaUsed } = await admin.rpc('record_scan', { p_user: userId, p_month: month });
     const answered = attempts[attempts.length - 1];
-    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, quotaBypassed: !enforced, startedAt, ...ref });
+    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, quotaBypassed: !enforced, ...(pro ? { pro: true } : {}), startedAt, ...ref });
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {

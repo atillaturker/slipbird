@@ -22,6 +22,7 @@ import { errorLocation, itemsDifference, type ReceiptFormError } from '@/lib/rec
 import { firstLowField, type ReviewFieldKey } from '@/lib/receipt-normalize';
 import { flagMessage } from '@/lib/review-flags';
 import { displayMerchant, paymentMethods, type PaymentMethod, type ReceiptSummary } from '@/lib/types';
+import { useProGate } from '@/store/pro';
 import { readAgain } from '@/store/scan';
 import { useReceiptForm } from '@/store/use-receipt-form';
 import { useTheme } from '@/theme';
@@ -37,6 +38,7 @@ export default function ReviewScreen() {
   const { scheme, colors, space, radius, type } = useTheme();
   const { height: windowHeight } = useWindowDimensions();
   const review = useReceiptForm(id);
+  const { openPaywall } = useProGate();
   const { form, errors, saving, fieldConfidence, setField } = review;
 
   const [tab, setTab] = useState<Tab>('receipt');
@@ -159,11 +161,18 @@ export default function ReviewScreen() {
             title={t(`parseIssue.${issueMessage(review.parseIssue)}.title`)}
             body={t(`parseIssue.${issueMessage(review.parseIssue)}.body`, { date: formatReceiptDate(nextQuotaReset(new Date()), null, lang) })}
             action={
-              review.hasOcrText ? (
-                <Button variant="secondary" size="md" onPress={() => void readAgain(id)}>
-                  {t('parseIssue.readAgain')}
-                </Button>
-              ) : undefined
+              <View style={{ gap: space[2] }}>
+                {review.parseIssue === 'quota_exceeded' && (
+                  <Button size="md" onPress={() => openPaywall('scans')}>
+                    {t('pro.get')}
+                  </Button>
+                )}
+                {review.hasOcrText && (
+                  <Button variant="secondary" size="md" onPress={() => void readAgain(id)}>
+                    {t('parseIssue.readAgain')}
+                  </Button>
+                )}
+              </View>
             }
           />
         )}

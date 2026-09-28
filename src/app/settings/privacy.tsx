@@ -1,13 +1,15 @@
 import { Stack } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { ScrollView, Text, View } from 'react-native';
+import { Linking, ScrollView, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { Button } from '@/components';
+import { PRIVACY_URL } from '@/config';
 import { useTheme } from '@/theme';
 
 const SECTIONS = ['s1', 's2', 's3', 's4'] as const;
 
-/** What Slipbird does with your data, in plain words (docs/SPEC.md §4 M7 finalises the policy). */
+/** What Slipbird does with your data, in plain words; the full policy is the page at PRIVACY_URL (docs/privacy). */
 export default function PrivacyScreen() {
   const { t } = useTranslation();
   const { colors, space, type } = useTheme();
@@ -25,6 +27,9 @@ export default function PrivacyScreen() {
           <Text style={[type.body, { color: colors.ink }]}>{t(`privacy.${s}Body`)}</Text>
         </View>
       ))}
+      <Button variant="secondary" block onPress={() => void Linking.openURL(PRIVACY_URL)}>
+        {t('privacy.online')}
+      </Button>
     </ScrollView>
   );
 }

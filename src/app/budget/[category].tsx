@@ -5,7 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { Button, TextField } from '@/components';
 import { FormScreen } from '@/components/FormScreen';
 import { currencySymbol, formatAmountInput, parseAmount } from '@/lib/money';
+import { canSetBudget } from '@/lib/pro';
 import { useBudgets } from '@/store/budgets';
+import { useProGate } from '@/store/pro';
 import { useSettings } from '@/store/settings';
 import { useBudgetActions } from '@/store/use-spending';
 import { categoryOrder } from '@/theme';
@@ -18,6 +20,7 @@ export default function BudgetScreen() {
   const budgets = useBudgets((s) => s.budgets);
   const refresh = useBudgets((s) => s.refresh);
   const { setBudget, removeBudget } = useBudgetActions();
+  const { isPro, requirePro } = useProGate();
   const category = categoryOrder.find((c) => c === param);
   const existing = budgets.find((b) => b.category === category && b.currency === home);
 
@@ -38,6 +41,11 @@ export default function BudgetScreen() {
     const minor = parseAmount(amount, home, { locale: i18n.language });
     if (minor === null || minor <= 0) {
       setError(t('budgets.amountInvalid'));
+      return;
+    }
+    // Free includes budgets for 3 categories; a fourth needs Pro.
+    if (!canSetBudget(budgets.map((b) => b.category), category, isPro)) {
+      requirePro('moreBudgets');
       return;
     }
     void setBudget(category, minor);

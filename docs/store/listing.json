@@ -1,0 +1,36 @@
+{
+  "app": {
+    "name": "Slipbird",
+    "bundleId": "com.atillaturker.slipbird",
+    "appleCategory": "Finance",
+    "appleSecondaryCategory": "Productivity",
+    "playCategory": "Finance",
+    "ageRating": "4+ / Everyone",
+    "supportUrl": "https://github.com/atillaturker/slipbird/issues",
+    "privacyUrl": "https://atillaturker.github.io/slipbird/privacy/"
+  },
+  "locales": {
+    "en": {
+      "appleLocale": "en-US",
+      "playLocale": "en-US",
+      "name": "Slipbird: Receipt Scanner",
+      "subtitle": "Scan receipts, see spending",
+      "promotionalText": "Scan it. Check it. Done. Turn paper receipts and e-invoices into a clear record of your spending.",
+      "shortDescription": "Scan receipts and e-invoices, check the numbers, see where your money goes.",
+      "keywords": "receipt,scanner,expense,tracker,budget,invoice,spending,bills,ocr,e-fatura,e-arsiv,money",
+      "whatsNew": "First release.",
+      "description": "Slipbird turns paper receipts and e-invoices into a clean record of your spending: scan, check, done.\n\nScan it\n• Point your camera at a receipt. Slipbird finds the edges, crops and straightens it. Long receipts can take up to 3 pages.\n• Import a photo from your library, or scan the QR code on a Turkish e-Arşiv or e-Fatura invoice for verified details.\n• Slipbird reads the text on your phone and fills in the merchant, date, total, VAT and items.\n\nCheck it\n• Anything Slipbird is unsure about is flagged, so you only look at what needs a look.\n• Fix a field and Slipbird remembers the category for that merchant next time.\n• Duplicate receipts are caught before you save.\n\nSee where it goes\n• This month's total against the same day last month.\n• Spending by category, the last six months, your top merchants and your average receipt.\n• Set a monthly budget per category and get a notification at 80% and at 100%.\n• Receipts in other currencies are converted to your home currency.\n\nYours to keep\n• Export your receipts as a CSV file, or a monthly PDF report.\n• Search by merchant, note or item. Filter by date, amount, source and payment method.\n• Works in English and Turkish.\n\nPrivate by design\nYour receipts and photos stay on your phone. Only the text found on a receipt is sent to be read, and Slipbird does not store it. No account, no ads, no tracking.\n\nSlipbird Pro\nThe free version reads 15 receipts a month and includes budgets for 3 categories. Slipbird Pro removes the limits: unlimited scans, monthly PDF reports and budgets for every category. Pro is a monthly or yearly subscription that renews automatically until you cancel it in your store account settings."
+    },
+    "tr": {
+      "appleLocale": "tr",
+      "playLocale": "tr-TR",
+      "name": "Slipbird: Fiş Tarayıcı",
+      "subtitle": "Fişleri tara, harcamanı gör",
+      "promotionalText": "Tara. Kontrol et. Bitti. Kâğıt fişleri ve e-faturaları harcamalarınızın net bir kaydına dönüştürün.",
+      "shortDescription": "Fişleri ve e-faturaları tara, kontrol et, paranın nereye gittiğini gör.",
+      "keywords": "fiş,tarayıcı,harcama,bütçe,fatura,e-arşiv,e-fatura,gider,takip,makbuz,para",
+      "whatsNew": "İlk sürüm.",
+      "description": "Slipbird, kâğıt fişleri ve e-faturaları harcamalarınızın düzenli bir kaydına dönüştürür: tara, kontrol et, bitti.\n\nTara\n• Kamerayı fişe tutun. Slipbird kenarları bulur, keser ve düzeltir. Uzun fişler 3 sayfaya kadar alınabilir.\n• Kitaplığınızdan bir fotoğraf içe aktarın ya da doğrulanmış bilgiler için e-Arşiv veya e-Fatura üzerindeki QR kodunu tarayın.\n• Slipbird metni telefonunuzda okur; işletme adını, tarihi, toplamı, KDV’yi ve ürünleri doldurur.\n\nKontrol et\n• Slipbird’ün emin olmadığı her şey işaretlenir; yalnızca bakılması gereken yere bakarsınız.\n• Bir alanı düzeltin, Slipbird o işletmenin kategorisini bir dahaki sefere hatırlar.\n• Aynı fiş, kaydetmeden önce fark edilir.\n\nNereye gittiğini gör\n• Bu ayın toplamı, geçen ayın aynı gününe göre.\n• Kategoriye göre harcama, son altı ay, en çok harcadığınız yerler ve ortalama fişiniz.\n• Kategori başına aylık bütçe belirleyin; %80’de ve %100’de bildirim alın.\n• Başka para birimlerindeki fişler ana para biriminize çevrilir.\n\nSizde kalır\n• Fişlerinizi CSV dosyası olarak ya da aylık PDF rapor olarak dışa aktarın.\n• İşletme, not veya ürüne göre arayın. Tarih, tutar, kaynak ve ödeme yöntemine göre süzün.\n• Türkçe ve İngilizce çalışır.\n\nTasarımı gereği gizli\nFişleriniz ve fotoğraflarınız telefonunuzda kalır. Okunması için yalnızca fişte bulunan metin gönderilir ve Slipbird onu saklamaz. Hesap yok, reklam yok, izleme yok.\n\nSlipbird Pro\nÜcretsiz sürüm ayda 15 fiş okur ve 3 kategori için bütçe içerir. Slipbird Pro sınırları kaldırır: sınırsız tarama, aylık PDF raporlar ve her kategori için bütçe. Pro, mağaza hesap ayarlarınızdan iptal edene kadar otomatik yenilenen aylık ya da yıllık bir aboneliktir."
+    }
+  }
+}
