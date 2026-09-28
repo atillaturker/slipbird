@@ -1,4 +1,4 @@
-import '@/i18n';
+import { i18n } from '@/i18n';
 
 import { IBMPlexMono_400Regular, IBMPlexMono_500Medium } from '@expo-google-fonts/ibm-plex-mono';
 import { InstrumentSans_400Regular, InstrumentSans_500Medium, InstrumentSans_600SemiBold } from '@expo-google-fonts/instrument-sans';
@@ -9,6 +9,7 @@ import { useFonts } from 'expo-font';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { setupNotifications } from '@/services/notifications';
 import { startScanQueue } from '@/services/scan-queue';
 import { ensureSession } from '@/services/supabase';
 import { processQueuedReceipt } from '@/store/scan';
@@ -34,6 +35,7 @@ export default function RootLayout() {
   // Anonymous session for parse-receipt, and the offline scan queue (retries when back online).
   useEffect(() => {
     void ensureSession();
+    void setupNotifications(i18n.t('budgetAlerts.channel'));
     return startScanQueue(processQueuedReceipt);
   }, []);
 

@@ -84,7 +84,9 @@ Capture ──► image saved locally ──► QR found? ──yes──► Gİ
 
 Settings (kv): `homeCurrency`, `language` (`system | en | tr`), `onboarded`, `budgetAlerts`.
 
-Exchange rates: Frankfurter (`https://api.frankfurter.app/latest?from=<home>`), cached 24h; receipts in other currencies are converted for totals and shown with their original amount in detail.
+Exchange rates: Frankfurter v2 (`https://api.frankfurter.dev/v2/rates?base=<home>`, which replaced `api.frankfurter.app/latest`), cached 24h, last cache used offline; receipts in other currencies are converted (exact integer math) for totals and shown with their original amount in detail; receipts with no known rate are left out of totals and the screen says how many.
+
+What counts toward totals, insights and budgets: saved receipts only (Home notes how many are still waiting for review). An info slip (`info_slip`) with the same date, total, currency and merchant as a saved invoice/receipt is not counted again; an info slip without a match counts.
 
 ## 3. Screens
 

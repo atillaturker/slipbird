@@ -7,6 +7,7 @@ import { defaultHomeCurrency, isCurrencyCode } from '@/lib/currency';
 import type { LanguageSetting } from '@/lib/language';
 
 const HOME_CURRENCY_KEY = 'homeCurrency';
+const BUDGET_ALERTS_KEY = 'budgetAlerts';
 
 function readHomeCurrency(): string {
   const stored = Storage.getItemSync(HOME_CURRENCY_KEY);
@@ -16,6 +17,9 @@ function readHomeCurrency(): string {
 type SettingsState = {
   language: LanguageSetting;
   homeCurrency: string;
+  /** Local notifications at 80% and 100% of a budget. On unless turned off (Settings, M6). */
+  budgetAlerts: boolean;
+  setBudgetAlerts: (on: boolean) => void;
   setLanguage: (language: LanguageSetting) => void;
   setHomeCurrency: (currency: string) => void;
 };
@@ -23,6 +27,11 @@ type SettingsState = {
 export const useSettings = create<SettingsState>((set) => ({
   language: readLanguageSetting(),
   homeCurrency: readHomeCurrency(),
+  budgetAlerts: Storage.getItemSync(BUDGET_ALERTS_KEY) !== 'false',
+  setBudgetAlerts: (on) => {
+    Storage.setItemSync(BUDGET_ALERTS_KEY, on ? 'true' : 'false');
+    set({ budgetAlerts: on });
+  },
   setLanguage: (language) => {
     Storage.setItemSync(LANGUAGE_KEY, language);
     set({ language });

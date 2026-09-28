@@ -1,4 +1,4 @@
-import { dayLabel, formatReceiptDate, fromISODate, groupByDay, isISODate, toISODate } from '../dates';
+import { dayLabel, formatReceiptDate, fromISODate, groupByDay, isISODate, monthLabel, toISODate } from '../dates';
 
 const now = new Date(2026, 9, 12, 15, 30); // 12 Oct 2026, local time
 
@@ -50,5 +50,13 @@ describe('groupByDay', () => {
       ['2026-10-12', ['a', 'b']],
       ['2026-10-10', ['c']],
     ]);
+  });
+});
+
+describe('monthLabel', () => {
+  it('gives short month names in both languages', () => {
+    expect(monthLabel('2026-10', 'en')).toBe('Oct');
+    expect(monthLabel('2026-10', 'tr')).toBe('Eki');
+    expect(monthLabel('bad', 'en')).toBe('bad');
   });
 });

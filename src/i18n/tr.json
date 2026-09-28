@@ -26,7 +26,18 @@
     "title": "Bu ay",
     "emptyTitle": "Henüz fiş yok",
     "emptyBody": "Bir kâğıt fişi ya da e-Arşiv faturasını tarayın, burada görünsün.",
-    "emptyAction": "Fiş tara"
+    "emptyAction": "Fiş tara",
+    "spent": "Bu ay harcanan",
+    "vsLastMonth": "geçen ayın aynı gününe göre",
+    "pending_one": "{{count}} fiş kontrol bekliyor ve henüz sayılmadı.",
+    "pending_other": "{{count}} fiş kontrol bekliyor ve henüz sayılmadı.",
+    "unconverted_one": "Başka para birimindeki {{count}} fiş dahil değil: henüz döviz kuru yok.",
+    "unconverted_other": "Başka para birimlerindeki {{count}} fiş dahil değil: henüz döviz kuru yok.",
+    "whereItWent": "Nereye gitti",
+    "needsReview": "Kontrol gerekli",
+    "recent": "Son fişler",
+    "seeAll": "Tüm fişleri gör",
+    "budgetsNear": "Limitine yaklaşan bütçeler"
   },
   "receipts": {
     "title": "Fişler",
@@ -46,12 +57,41 @@
   "insights": {
     "title": "Analiz",
     "emptyTitle": "Henüz gösterilecek bir şey yok",
-    "emptyBody": "Birkaç fiş kaydettiğinizde analizler burada görünür."
+    "emptyBody": "Birkaç fiş kaydedin, harcamalarınız burada görünsün.",
+    "week": "Hafta",
+    "month": "Ay",
+    "year": "Yıl",
+    "spentWeek": "Bu hafta harcanan",
+    "spentMonth": "Bu ay harcanan",
+    "spentYear": "Bu yıl harcanan",
+    "vsWeek": "geçen haftanın aynı gününe göre",
+    "vsMonth": "geçen ayın aynı gününe göre",
+    "vsYear": "geçen yılın aynı gününe göre",
+    "categories": "Kategoriye göre",
+    "lastMonths": "Son 6 ay",
+    "chartSummary": "Aylık harcama: {{months}}",
+    "topMerchants": "En çok harcanan yerler",
+    "receiptCount_one": "{{count}} fiş",
+    "receiptCount_other": "{{count}} fiş",
+    "average": "Ortalama fiş"
   },
   "budgets": {
     "title": "Bütçeler",
     "emptyTitle": "Henüz bütçe yok",
-    "emptyBody": "Bir kategori için aylık limit belirleyin, ne kadar yaklaştığınızı görün."
+    "emptyBody": "Bir kategori için aylık limit belirleyin, ne kadar yaklaştığınızı görün.",
+    "thisMonth": "Bu ay",
+    "addTitle": "Bütçe belirle",
+    "addBody": "Aylık limit belirlemek için bir kategori seçin.",
+    "sheetTitle": "{{category}} bütçesi",
+    "monthlyLimit": "Aylık limit",
+    "set": "Bütçe belirle",
+    "remove": "Bütçeyi kaldır",
+    "cancel": "Vazgeç",
+    "amountInvalid": "Sıfırdan büyük bir tutar girin, örneğin 5.000",
+    "left": "{{amount}} kaldı",
+    "over": "{{amount}} aşıldı",
+    "editHint": "{{category}} bütçesini değiştir",
+    "otherCurrency": "{{currency}} ile belirlenen bütçeler, ana para birimi yeniden {{currency}} olana kadar duraklatıldı."
   },
   "reviewField": {
     "confirmed": "Doğru görünüyor",
@@ -239,7 +279,11 @@
     "qtyPcs": "{{qty}} adet",
     "qtyKg": "{{qty}} kg",
     "qtyL": "{{qty}} L",
-    "legalName": "Ticari unvan"
+    "legalName": "Ticari unvan",
+    "inHomeCurrency": "{{currency}} karşılığı",
+    "approx": "≈ {{amount}}",
+    "noRate": "Henüz döviz kuru yok",
+    "linkedSlip": "Bu alışverişin e-Arşiv faturasıyla birlikte basıldı — bir kez sayılır."
   },
   "qr": {
     "close": "Kapat",
@@ -307,5 +351,12 @@
     "pcs": "adet",
     "kg": "kg",
     "l": "L"
+  },
+  "budgetAlerts": {
+    "channel": "Bütçe uyarıları",
+    "nearTitle": "{{category}}: bütçenin %80’i",
+    "nearBody": "Bu ay {{limit}} bütçenin {{spent}} tutarı harcandı.",
+    "overTitle": "{{category}}: bütçe doldu",
+    "overBody": "Bu ay {{spent}} harcandı, bütçe {{over}} aşıldı."
   }
 }

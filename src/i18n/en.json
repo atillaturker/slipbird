@@ -26,7 +26,18 @@
     "title": "This month",
     "emptyTitle": "No receipts yet",
     "emptyBody": "Scan a paper receipt or e-Arşiv invoice and it will show up here.",
-    "emptyAction": "Scan a receipt"
+    "emptyAction": "Scan a receipt",
+    "spent": "Spent this month",
+    "vsLastMonth": "vs same day last month",
+    "pending_one": "{{count}} receipt is waiting for review and isn’t counted yet.",
+    "pending_other": "{{count}} receipts are waiting for review and aren’t counted yet.",
+    "unconverted_one": "{{count}} receipt in another currency isn’t included: no exchange rate yet.",
+    "unconverted_other": "{{count}} receipts in other currencies aren’t included: no exchange rate yet.",
+    "whereItWent": "Where it went",
+    "needsReview": "Needs review",
+    "recent": "Recent",
+    "seeAll": "See all receipts",
+    "budgetsNear": "Budgets nearing their limit"
   },
   "receipts": {
     "title": "Receipts",
@@ -46,12 +57,41 @@
   "insights": {
     "title": "Insights",
     "emptyTitle": "Nothing to show yet",
-    "emptyBody": "Insights appear once you have saved a few receipts."
+    "emptyBody": "Save a few receipts and your spending will appear here.",
+    "week": "Week",
+    "month": "Month",
+    "year": "Year",
+    "spentWeek": "Spent this week",
+    "spentMonth": "Spent this month",
+    "spentYear": "Spent this year",
+    "vsWeek": "vs same day last week",
+    "vsMonth": "vs same day last month",
+    "vsYear": "vs same day last year",
+    "categories": "By category",
+    "lastMonths": "Last 6 months",
+    "chartSummary": "Monthly spending: {{months}}",
+    "topMerchants": "Top merchants",
+    "receiptCount_one": "{{count}} receipt",
+    "receiptCount_other": "{{count}} receipts",
+    "average": "Average receipt"
   },
   "budgets": {
     "title": "Budgets",
     "emptyTitle": "No budgets yet",
-    "emptyBody": "Set a monthly limit for a category to see how close you are."
+    "emptyBody": "Set a monthly limit for a category to see how close you are.",
+    "thisMonth": "This month",
+    "addTitle": "Set a budget",
+    "addBody": "Pick a category to set a monthly limit.",
+    "sheetTitle": "{{category}} budget",
+    "monthlyLimit": "Monthly limit",
+    "set": "Set budget",
+    "remove": "Remove budget",
+    "cancel": "Cancel",
+    "amountInvalid": "Enter an amount above zero, like 5.000",
+    "left": "{{amount}} left",
+    "over": "Over by {{amount}}",
+    "editHint": "Change the {{category}} budget",
+    "otherCurrency": "Budgets set in {{currency}} are paused until the home currency is {{currency}} again."
   },
   "reviewField": {
     "confirmed": "Looks right",
@@ -239,7 +279,11 @@
     "qtyPcs": "{{qty}} ×",
     "qtyKg": "{{qty}} kg",
     "qtyL": "{{qty}} L",
-    "legalName": "Legal name"
+    "legalName": "Legal name",
+    "inHomeCurrency": "In {{currency}}",
+    "approx": "≈ {{amount}}",
+    "noRate": "No exchange rate yet",
+    "linkedSlip": "Printed with the e-Arşiv invoice for this purchase — counted once."
   },
   "qr": {
     "close": "Close",
@@ -307,5 +351,12 @@
     "pcs": "pcs",
     "kg": "kg",
     "l": "L"
+  },
+  "budgetAlerts": {
+    "channel": "Budget alerts",
+    "nearTitle": "{{category}}: 80% of your budget",
+    "nearBody": "{{spent}} of {{limit}} spent this month.",
+    "overTitle": "{{category}}: budget used up",
+    "overBody": "{{spent}} spent this month, {{over}} over your budget."
   }
 }

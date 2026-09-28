@@ -57,3 +57,9 @@ export function groupByDay<T extends { date: string }>(items: T[]): { date: stri
   }
   return groups;
 }
+
+/** Short month name for chart axes: "Oct" / "Eki". `month` is YYYY-MM. */
+export function monthLabel(month: string, language: string): string {
+  const date = fromISODate(`${month}-01`);
+  return date ? format(date, 'MMM', { locale: dateLocale(language) }) : month;
+}

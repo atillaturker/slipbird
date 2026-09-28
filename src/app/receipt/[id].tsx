@@ -12,7 +12,11 @@ import { formatDecimal } from '@/lib/number';
 import { receiptBadge } from '@/lib/receipt-status';
 import { displayMerchant } from '@/lib/types';
 import { imageUri } from '@/services/images';
+import { toBase } from '@/lib/currency-convert';
+import { linkedInfoSlips } from '@/lib/spending';
 import { useReceipt, useReceipts } from '@/store/receipts';
+import { useSettings } from '@/store/settings';
+import { useSpending } from '@/store/spending';
 import { useScanActions } from '@/store/scan';
 import { useTheme } from '@/theme';
 
@@ -24,6 +28,9 @@ export default function ReceiptDetailScreen() {
   const receipt = useReceipt(id);
   const remove = useReceipts((s) => s.remove);
   const { retake } = useScanActions();
+  const home = useSettings((s) => s.homeCurrency);
+  const rates = useSpending((s) => s.rates);
+  const spendRows = useSpending((s) => s.rows);
   const lang = i18n.language;
 
   const screen = <Stack.Screen options={{ title: t('detail.title') }} />;
@@ -96,11 +103,23 @@ export default function ReceiptDetailScreen() {
         images={receipt.imagePaths.map(imageUri)}
       />
 
+      {receipt.documentType === 'info_slip' && linkedInfoSlips(spendRows).has(receipt.id) ? (
+        <Text style={[type.subhead, { color: colors.inkMuted }]}>{t('detail.linkedSlip')}</Text>
+      ) : null}
+
       <ListGroup>
         <InfoRow label={t('detail.category')}>
           <View style={{ width: space[2], height: space[2], borderRadius: radius.full, backgroundColor: categories[receipt.category] }} />
           <Text style={[type.body, { color: colors.ink }]}>{t(`category.${receipt.category}`)}</Text>
         </InfoRow>
+        {receipt.currency !== home ? (
+          <InfoRow label={t('detail.inHomeCurrency', { currency: home })}>
+            {(() => {
+              const converted = rates && rates.base === home ? toBase(receipt.totalMinor, receipt.currency, rates) : null;
+              return converted === null ? t('detail.noRate') : t('detail.approx', { amount: formatMoney(converted, home, lang) });
+            })()}
+          </InfoRow>
+        ) : null}
         {receipt.merchantDisplay && receipt.merchant && receipt.merchant !== receipt.merchantDisplay ? (
           <InfoRow label={t('detail.legalName')}>{receipt.merchant}</InfoRow>
         ) : null}

@@ -5,16 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { ScrollView, SectionList, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Chip, EmptyState, ReceiptRow } from '@/components';
+import { Button, Chip, EmptyState } from '@/components';
 import { IconButton } from '@/components/IconButton';
 import { GroupRow } from '@/components/ListGroup';
+import { ReceiptSummaryRow } from '@/components/ReceiptSummaryRow';
 import { ScreenHeader } from '@/components/Screen';
 import { SearchField } from '@/components/SearchField';
 import { dayLabel, groupByDay } from '@/lib/dates';
-import { formatMoney } from '@/lib/money';
-import { receiptBadge } from '@/lib/receipt-status';
-import { displayMerchant } from '@/lib/types';
-import { thumbnailUri } from '@/services/images';
 import { useReceipts } from '@/store/receipts';
 import { categoryOrder, useTheme } from '@/theme';
 
@@ -99,29 +96,11 @@ export default function ReceiptsScreen() {
           {section.title}
         </Text>
       )}
-      renderItem={({ item, index, section }) => {
-        const badge = receiptBadge(item);
-        return (
-          <GroupRow first={index === 0} last={index === section.data.length - 1}>
-            <ReceiptRow
-              merchant={displayMerchant(item) ?? t('receipts.unknownMerchant')}
-              category={item.category}
-              categoryLabel={t(`category.${item.category}`)}
-              date={item.time ?? section.label}
-              amount={item.totalMinor > 0 ? formatMoney(item.totalMinor, item.currency, i18n.language) : '—'}
-              status={badge ? { tone: badge.tone, label: t(`status.${badge.label}`) } : undefined}
-              processing={item.status === 'processing'}
-              thumbnailUri={thumbnailUri(item.id, item.imagePaths)}
-              onPress={() =>
-                item.status === 'needs_review' || item.status === 'queued'
-                  ? router.push({ pathname: '/scan/review', params: { id: item.id } })
-                  : router.push({ pathname: '/receipt/[id]', params: { id: item.id } })
-              }
-              onDelete={() => void remove(item.id)}
-            />
-          </GroupRow>
-        );
-      }}
+      renderItem={({ item, index, section }) => (
+        <GroupRow first={index === 0} last={index === section.data.length - 1}>
+          <ReceiptSummaryRow receipt={item} dateText={item.time ?? section.label} onDelete={() => void remove(item.id)} />
+        </GroupRow>
+      )}
     />
   );
 }

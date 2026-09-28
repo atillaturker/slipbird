@@ -1,4 +1,4 @@
-import { currencyExponent, currencySymbol, detectNumberStyle, formatAmountInput, formatMoney, parseAmount } from '../money';
+import { currencyExponent, currencySymbol, detectNumberStyle, formatAmountInput, formatMoney, formatMoneyShort, parseAmount } from '../money';
 
 // Intl may use narrow/no-break spaces; compare with plain spaces.
 const plain = (s: string) => s.replace(/[  ]/g, ' ');
@@ -133,5 +133,15 @@ describe('detectNumberStyle', () => {
     expect(detectNumberStyle(['12,50', '1.234'])).toBe('comma');
     expect(detectNumberStyle(['45', '1.234'])).toBeNull();
     expect(detectNumberStyle([])).toBeNull();
+  });
+});
+
+describe('formatMoneyShort', () => {
+  it('keeps chart labels short', () => {
+    expect(plain(formatMoneyShort(1234500, 'TRY', 'en'))).toBe('₺12.3K');
+    // Turkish compact notation puts the symbol after: "12,3 B ₺".
+    expect(plain(formatMoneyShort(1234500, 'TRY', 'tr'))).toMatch(/12,3 ?B/);
+    expect(formatMoneyShort(1234500, 'TRY', 'tr')).toContain('₺');
+    expect(plain(formatMoneyShort(98000, 'USD', 'en'))).toBe('$980');
   });
 });

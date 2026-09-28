@@ -160,3 +160,24 @@ export function currencySymbol(currency: string, locale: string): string {
     return currency;
   }
 }
+
+const shortFormatters = new Map<string, Intl.NumberFormat>();
+
+/**
+ * Short amount for chart labels: compact where the engine supports it ("₺12 B" tr, "₺12K" en), otherwise whole
+ * units ("₺12.345"). Display only — never parse this back.
+ */
+export function formatMoneyShort(minor: number, currency: string, locale: string): string {
+  const key = `${locale}|${currency}`;
+  let f = shortFormatters.get(key);
+  if (!f) {
+    const base = { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 } as const;
+    try {
+      f = new Intl.NumberFormat(locale, { ...base, notation: 'compact', currencyDisplay: 'narrowSymbol', minimumFractionDigits: 0, maximumFractionDigits: 1 });
+    } catch {
+      f = new Intl.NumberFormat(locale, base);
+    }
+    shortFormatters.set(key, f);
+  }
+  return f.format(minor / 10 ** currencyExponent(currency));
+}
