@@ -22,6 +22,13 @@ describe('queue', () => {
     expect(dequeue(q, 'a')).toEqual([]);
   });
 
+  it("honours the provider's retry delay, within 1 s…1 h", () => {
+    const q = enqueue([], 'a', 0);
+    expect(reschedule(q, 'a', 1000, 22_000)[0]).toEqual({ receiptId: 'a', attempts: 1, nextAttemptAt: 23_000 });
+    expect(reschedule(q, 'a', 1000, 10)[0].nextAttemptAt).toBe(2000);
+    expect(reschedule(q, 'a', 0, 5 * 3_600_000)[0].nextAttemptAt).toBe(3_600_000);
+  });
+
   it('survives corrupt storage', () => {
     expect(parseQueue(null)).toEqual([]);
     expect(parseQueue('nope')).toEqual([]);

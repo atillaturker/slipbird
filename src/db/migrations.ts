@@ -67,6 +67,12 @@ export const migrations: readonly string[] = [
   ALTER TABLE receipts ADD COLUMN fieldConfidence TEXT;
   CREATE INDEX receipts_duplicate ON receipts (merchantNormalized, totalMinor, date);
   `,
+  // 3 — short brand name for lists ("Çağrı Market"), document type (info slips), item units (kg, l, pcs).
+  `
+  ALTER TABLE receipts ADD COLUMN merchantDisplay TEXT;
+  ALTER TABLE receipts ADD COLUMN documentType TEXT;
+  ALTER TABLE receipt_items ADD COLUMN unit TEXT;
+  `,
 ];
 
 /** The migrations still to run for a database at `version`, with the version each one sets. */

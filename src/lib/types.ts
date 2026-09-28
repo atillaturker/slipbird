@@ -8,9 +8,18 @@ export type PaymentMethod = 'card' | 'cash' | 'other';
 
 export const paymentMethods: readonly PaymentMethod[] = ['card', 'cash', 'other'];
 
+/** How a line's quantity is measured: counted, weighed or by volume. */
+export type ItemUnit = 'pcs' | 'kg' | 'l';
+export const itemUnits: readonly ItemUnit[] = ['pcs', 'kg', 'l'];
+
+/** `info_slip` = "BİLGİ FİŞİ / MALİ DEĞERİ YOKTUR", printed next to an e-Arşiv invoice; not a tax receipt. */
+export type DocumentType = 'receipt' | 'invoice' | 'info_slip' | 'other';
+export const documentTypes: readonly DocumentType[] = ['receipt', 'invoice', 'info_slip', 'other'];
+
 export type ReceiptItem = {
   name: string;
   qty: number | null;
+  unit: ItemUnit | null;
   amountMinor: number;
 };
 
@@ -21,7 +30,11 @@ export type ReceiptTax = {
 
 /** A receipt as the app edits and saves it. Money is integer minor units + ISO 4217 code. */
 export type ReceiptInput = {
+  /** Legal name as printed ("Çağrı Mağazacılık A.Ş."). */
   merchant: string | null;
+  /** Short brand name shown in lists ("Çağrı Market"); null → use `merchant`. */
+  merchantDisplay: string | null;
+  documentType: DocumentType | null;
   date: string; // YYYY-MM-DD
   time: string | null; // HH:mm
   totalMinor: number;
@@ -51,5 +64,10 @@ export type Receipt = ReceiptInput & {
 /** The columns a list row needs. */
 export type ReceiptSummary = Pick<
   Receipt,
-  'id' | 'merchant' | 'date' | 'time' | 'totalMinor' | 'currency' | 'category' | 'source' | 'status' | 'imagePaths' | 'fieldConfidence'
+  'id' | 'merchant' | 'merchantDisplay' | 'documentType' | 'date' | 'time' | 'totalMinor' | 'currency' | 'category' | 'source' | 'status' | 'imagePaths' | 'fieldConfidence'
 >;
+
+/** The name to show for a receipt: the short brand when known, else the legal name. */
+export function displayMerchant(r: { merchant: string | null; merchantDisplay: string | null }): string | null {
+  return r.merchantDisplay?.trim() || r.merchant?.trim() || null;
+}

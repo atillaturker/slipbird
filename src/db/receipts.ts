@@ -8,7 +8,7 @@ import type { Category } from '@/theme';
 
 import { rowToReceipt, rowToSummary, type ItemRow, type ReceiptRow, type ReceiptSummaryRow, type TaxRow } from './mappers';
 
-const SUMMARY_COLUMNS = 'id, merchant, date, time, totalMinor, currency, category, source, status, imagePaths, fieldConfidence';
+const SUMMARY_COLUMNS = 'id, merchant, merchantDisplay, documentType, date, time, totalMinor, currency, category, source, status, imagePaths, fieldConfidence';
 const ORDER = 'ORDER BY date DESC, time DESC, createdAt DESC';
 
 export type ReceiptFilter = {
@@ -35,7 +35,7 @@ export async function listReceipts(db: SQLiteDatabase, filter: ReceiptFilter = {
 export async function getReceipt(db: SQLiteDatabase, id: string): Promise<Receipt | null> {
   const row = await db.getFirstAsync<ReceiptRow>('SELECT * FROM receipts WHERE id = ?', id);
   if (!row) return null;
-  const items = await db.getAllAsync<ItemRow>('SELECT name, qty, amountMinor FROM receipt_items WHERE receiptId = ? ORDER BY position', id);
+  const items = await db.getAllAsync<ItemRow>('SELECT name, qty, unit, amountMinor FROM receipt_items WHERE receiptId = ? ORDER BY position', id);
   const taxes = await db.getAllAsync<TaxRow>('SELECT rate, amountMinor FROM receipt_taxes WHERE receiptId = ? ORDER BY rate', id);
   return rowToReceipt(row, items, taxes);
 }
@@ -44,7 +44,7 @@ export async function getReceipt(db: SQLiteDatabase, id: string): Promise<Receip
 export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: string): Promise<string> {
   const receiptId = id ?? createId();
   const now = new Date().toISOString();
-  const searchText = buildSearchText(input.merchant, input.note, input.items.map((i) => i.name));
+  const searchText = buildSearchText([input.merchantDisplay, input.merchant].filter(Boolean).join(' '), input.note, input.items.map((i) => i.name));
   const values = [
     input.merchant,
     input.date,
@@ -63,6 +63,8 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
     searchText,
     normalizeMerchant(input.merchant),
     input.fieldConfidence ? JSON.stringify(input.fieldConfidence) : null,
+    input.merchantDisplay,
+    input.documentType,
   ];
 
   await db.withExclusiveTransactionAsync(async (txn) => {
@@ -70,7 +72,7 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
       await txn.runAsync(
         `UPDATE receipts SET merchant = ?, date = ?, time = ?, totalMinor = ?, currency = ?, category = ?, paymentMethod = ?, note = ?,
            source = ?, status = ?, ocrText = ?, ettn = ?, documentNumber = ?, imagePaths = ?, searchText = ?,
-           merchantNormalized = ?, fieldConfidence = ?, updatedAt = ?
+           merchantNormalized = ?, fieldConfidence = ?, merchantDisplay = ?, documentType = ?, updatedAt = ?
          WHERE id = ?`,
         [...values, now, receiptId],
       );
@@ -79,17 +81,18 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
     } else {
       await txn.runAsync(
         `INSERT INTO receipts (merchant, date, time, totalMinor, currency, category, paymentMethod, note,
-           source, status, ocrText, ettn, documentNumber, imagePaths, searchText, merchantNormalized, fieldConfidence, createdAt, updatedAt, id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           source, status, ocrText, ettn, documentNumber, imagePaths, searchText, merchantNormalized, fieldConfidence, merchantDisplay, documentType, createdAt, updatedAt, id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [...values, now, now, receiptId],
       );
     }
     for (const [position, item] of input.items.entries()) {
-      await txn.runAsync('INSERT INTO receipt_items (id, receiptId, name, qty, amountMinor, position) VALUES (?, ?, ?, ?, ?, ?)', [
+      await txn.runAsync('INSERT INTO receipt_items (id, receiptId, name, qty, unit, amountMinor, position) VALUES (?, ?, ?, ?, ?, ?, ?)', [
         createId(),
         receiptId,
         item.name,
         item.qty,
+        item.unit,
         item.amountMinor,
         position,
       ]);

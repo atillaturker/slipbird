@@ -3,7 +3,7 @@ import type { Category } from '@/theme';
 import { isISODate } from './dates';
 import { formatAmountInput, parseAmount } from './money';
 import { formatDecimal, parseDecimal } from './number';
-import type { PaymentMethod, Receipt, ReceiptInput } from './types';
+import { displayMerchant, type ItemUnit, type PaymentMethod, type Receipt, type ReceiptInput } from './types';
 
 /** What the manual entry screen edits: strings as typed, parsed on save. */
 export type ReceiptForm = {
@@ -14,7 +14,7 @@ export type ReceiptForm = {
   category: Category;
   paymentMethod: PaymentMethod | null;
   note: string;
-  items: { name: string; qty: string; amount: string }[];
+  items: { name: string; qty: string; unit: ItemUnit | null; amount: string }[];
   taxes: { rate: string; amount: string }[];
 };
 
@@ -41,7 +41,7 @@ export function validateReceiptForm(
   form: ReceiptForm,
   today: string,
   locale: string,
-): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time' | 'fieldConfidence'> } | { ok: false; errors: ReceiptFormErrors } {
+): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time' | 'fieldConfidence' | 'merchantDisplay' | 'documentType'> } | { ok: false; errors: ReceiptFormErrors } {
   const errors: ReceiptFormErrors = { items: {}, taxes: {} };
   let failed = false;
   const fail = () => {
@@ -87,7 +87,7 @@ export function validateReceiptForm(
         errors.items[index] = e;
         fail();
       }
-      return { name, qty, amountMinor: amountMinor ?? 0 };
+      return { name, qty, unit: qty === null ? null : item.unit, amountMinor: amountMinor ?? 0 };
     });
 
   const taxes = form.taxes
@@ -129,7 +129,8 @@ export function validateReceiptForm(
 export function receiptToForm(receipt: Receipt, locale: string): ReceiptForm {
   const money = (minor: number) => formatAmountInput(minor, receipt.currency, locale);
   return {
-    merchant: receipt.merchant ?? '',
+    // The form edits the name people see in lists; the legal name stays as printed.
+    merchant: displayMerchant(receipt) ?? '',
     date: receipt.date,
     // Scans waiting for review have no total yet: start empty rather than at 0,00.
     total: receipt.totalMinor > 0 ? money(receipt.totalMinor) : '',
@@ -137,7 +138,7 @@ export function receiptToForm(receipt: Receipt, locale: string): ReceiptForm {
     category: receipt.category,
     paymentMethod: receipt.paymentMethod,
     note: receipt.note ?? '',
-    items: receipt.items.map((i) => ({ name: i.name, qty: i.qty === null ? '' : formatDecimal(i.qty, locale), amount: money(i.amountMinor) })),
+    items: receipt.items.map((i) => ({ name: i.name, qty: i.qty === null ? '' : formatDecimal(i.qty, locale), unit: i.unit, amount: money(i.amountMinor) })),
     taxes: receipt.taxes.map((t) => ({ rate: t.rate === null ? '' : formatDecimal(t.rate, locale), amount: money(t.amountMinor) })),
   };
 }
@@ -148,4 +149,16 @@ export function errorLocation(errors: ReceiptFormErrors): { tab: 'receipt' | 'it
   const taxError = Object.keys(errors.taxes).length > 0;
   const itemError = Object.keys(errors.items).length > 0;
   return { tab: !receiptError && !taxError && itemError ? 'items' : 'receipt', openTaxes: taxError };
+}
+
+/**
+ * How far the items are from the total, as typed right now: `diffMinor` > 0 means the items are short of the
+ * total, < 0 means they exceed it. Null when there are no readable items or no readable total.
+ */
+export function itemsDifference(form: ReceiptForm, locale: string): { sumMinor: number; diffMinor: number } | null {
+  const total = form.total.trim() ? parseAmount(form.total, form.currency, { locale }) : null;
+  const amounts = form.items.map((i) => (i.amount.trim() ? parseAmount(i.amount, form.currency, { locale }) : null)).filter((a): a is number => a !== null);
+  if (total === null || amounts.length === 0) return null;
+  const sumMinor = amounts.reduce((sum, a) => sum + a, 0);
+  return { sumMinor, diffMinor: total - sumMinor };
 }

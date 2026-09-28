@@ -6,8 +6,8 @@ import { dequeue, dueItems, enqueue, parseQueue, reschedule, type QueueItem } fr
 
 const QUEUE_KEY = 'scanQueue';
 
-/** What processing one queued receipt ended in. */
-export type QueueOutcome = 'done' | 'retry';
+/** What processing one queued receipt ended in; `retryAfterMs` when the provider said when to retry. */
+export type QueueOutcome = 'done' | 'retry' | { retryAfterMs: number };
 type Handler = (receiptId: string) => Promise<QueueOutcome>;
 
 let handler: Handler | null = null;
@@ -47,7 +47,8 @@ export async function processQueue(force = false): Promise<void> {
       } catch {
         outcome = 'retry';
       }
-      write(outcome === 'done' ? dequeue(read(), item.receiptId) : reschedule(read(), item.receiptId, Date.now()));
+      if (outcome === 'done') write(dequeue(read(), item.receiptId));
+      else write(reschedule(read(), item.receiptId, Date.now(), outcome === 'retry' ? undefined : outcome.retryAfterMs));
     }
   } finally {
     running = false;

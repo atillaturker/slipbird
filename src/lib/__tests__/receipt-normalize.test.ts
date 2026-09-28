@@ -3,18 +3,20 @@ import type { ParsedReceipt } from '../parsed-receipt';
 import { firstLowField, gibQrConfidence, hasLowField, mergeGibQr, normalizeParsedReceipt } from '../receipt-normalize';
 
 import { earsivDotDecimal } from '../__fixtures__/gib-qr';
+import { cagriParsed, infoSlipParsed } from '../__fixtures__/parsed-receipts';
 
 const ctx = { today: '2026-10-12', deviceCurrency: 'TRY', locale: 'tr' };
 
 const parsed = (patch: Partial<ParsedReceipt> = {}): ParsedReceipt => ({
-  merchant: { value: 'Migros', confidence: 'high' },
+  merchant: { value: 'Migros Ticaret A.Ş.', confidence: 'high' },
+  merchantDisplay: 'Migros',
   date: { value: '2026-10-11', time: '18:42', confidence: 'high' },
   total: { value: '1.234,56', confidence: 'high' },
   currency: { value: 'TRY', confidence: 'high' },
   tax: [{ rate: 10, amount: '112,23' }],
   items: [
-    { name: 'Süt', qty: 2, amount: '1.000,00' },
-    { name: 'Ekmek', qty: null, amount: '234,56' },
+    { name: 'Süt', qty: 2, unit: 'pcs', amount: '1.000,00' },
+    { name: 'Ekmek', qty: null, unit: null, amount: '234,56' },
   ],
   paymentMethod: 'card',
   category: { value: 'groceries', confidence: 'high' },
@@ -25,10 +27,10 @@ const parsed = (patch: Partial<ParsedReceipt> = {}): ParsedReceipt => ({
 describe('normalizeParsedReceipt', () => {
   it('parses a clean Turkish receipt with everything high', () => {
     const r = normalizeParsedReceipt(parsed(), ctx);
-    expect(r).toMatchObject({ merchant: 'Migros', date: '2026-10-11', time: '18:42', totalMinor: 123456, currency: 'TRY', category: 'groceries', paymentMethod: 'card' });
+    expect(r).toMatchObject({ merchant: 'Migros Ticaret A.Ş.', merchantDisplay: 'Migros', documentType: 'receipt', date: '2026-10-11', time: '18:42', totalMinor: 123456, currency: 'TRY', category: 'groceries', paymentMethod: 'card' });
     expect(r.items).toEqual([
-      { name: 'Süt', qty: 2, amountMinor: 100000 },
-      { name: 'Ekmek', qty: null, amountMinor: 23456 },
+      { name: 'Süt', qty: 2, unit: 'pcs', amountMinor: 100000 },
+      { name: 'Ekmek', qty: null, unit: null, amountMinor: 23456 },
     ]);
     expect(r.taxes).toEqual([{ rate: 10, amountMinor: 11223 }]);
     expect(hasLowField(r.fieldConfidence)).toBe(false);
@@ -85,9 +87,9 @@ describe('normalizeParsedReceipt', () => {
     const r = normalizeParsedReceipt(
       parsed({
         items: [
-          { name: 'Süt', qty: 0, amount: '1.234,56' },
-          { name: 'Garbage', qty: 1, amount: 'abc' },
-          { name: ' ', qty: 1, amount: '1,00' },
+          { name: 'Süt', qty: 0, unit: 'kg', amount: '1.234,56' },
+          { name: 'Garbage', qty: 1, unit: null, amount: 'abc' },
+          { name: ' ', qty: 1, unit: null, amount: '1,00' },
         ],
         tax: [
           { rate: 150, amount: '10,00' },
@@ -96,7 +98,7 @@ describe('normalizeParsedReceipt', () => {
       }),
       ctx,
     );
-    expect(r.items).toEqual([{ name: 'Süt', qty: null, amountMinor: 123456 }]);
+    expect(r.items).toEqual([{ name: 'Süt', qty: null, unit: null, amountMinor: 123456 }]);
     expect(r.taxes).toEqual([{ rate: null, amountMinor: 1000 }]);
   });
 });
@@ -104,7 +106,7 @@ describe('normalizeParsedReceipt', () => {
 describe('GİB QR merge', () => {
   it('trusts the QR for date, total, currency and taxes', () => {
     const r = mergeGibQr(normalizeParsedReceipt(parsed({ total: { value: '999,00', confidence: 'low' } }), ctx), parseGibQr(earsivDotDecimal)!);
-    expect(r).toMatchObject({ date: '2026-10-12', totalMinor: 118000, currency: 'TRY', merchant: 'Migros', documentNumber: 'GIB2026000000123' });
+    expect(r).toMatchObject({ date: '2026-10-12', totalMinor: 118000, currency: 'TRY', merchant: 'Migros Ticaret A.Ş.', documentNumber: 'GIB2026000000123' });
     expect(r.fieldConfidence.total).toEqual({ confidence: 'high' });
     expect(r.taxes).toHaveLength(2);
   });
@@ -112,5 +114,46 @@ describe('GİB QR merge', () => {
   it('flags only the merchant for a QR-only receipt', () => {
     expect(firstLowField(gibQrConfidence(false))).toBe('merchant');
     expect(gibQrConfidence(true).merchant).toEqual({ confidence: 'high' });
+  });
+});
+
+describe('display name, units and document type', () => {
+  it('keeps a weighed line with its unit', () => {
+    const r = normalizeParsedReceipt(
+      parsed({ total: { value: '192,68', confidence: 'high' }, items: [{ name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amount: '192,68' }] }),
+      ctx,
+    );
+    expect(r.items).toEqual([{ name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amountMinor: 19268 }]);
+  });
+
+  it('keeps the display name only when there is a merchant', () => {
+    expect(normalizeParsedReceipt(parsed({ merchant: { value: null, confidence: 'low' }, merchantDisplay: 'Guess' }), ctx).merchantDisplay).toBeNull();
+    expect(normalizeParsedReceipt(parsed({ merchantDisplay: '  ' }), ctx).merchantDisplay).toBeNull();
+  });
+
+  it('passes info slips through', () => {
+    expect(normalizeParsedReceipt(parsed({ documentType: 'info_slip' }), ctx).documentType).toBe('info_slip');
+  });
+});
+
+describe('Çağrı fixtures', () => {
+  const today = { today: '2026-10-12', deviceCurrency: 'TRY', locale: 'tr' };
+
+  it('normalizes the Çağrı receipt: names, kg line, total matches items', () => {
+    const r = normalizeParsedReceipt(cagriParsed, today);
+    expect([r.merchant, r.merchantDisplay]).toEqual(['Çağrı Mağazacılık A.Ş.', 'Çağrı Market']);
+    expect(r.totalMinor).toBe(52903);
+    expect(r.items.find((i) => i.unit === 'kg')).toEqual({ name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amountMinor: 19268 });
+    expect(r.items.reduce((s, i) => s + i.amountMinor, 0)).toBe(52903);
+    expect(hasLowField(r.fieldConfidence)).toBe(false);
+  });
+
+  it('flags a missing line with the difference available', () => {
+    const r = normalizeParsedReceipt({ ...cagriParsed, items: cagriParsed.items.slice(0, 3) }, today);
+    expect(r.fieldConfidence.total?.reason).toBe('itemsMismatch');
+  });
+
+  it('keeps the info slip type', () => {
+    expect(normalizeParsedReceipt(infoSlipParsed, today).documentType).toBe('info_slip');
   });
 });

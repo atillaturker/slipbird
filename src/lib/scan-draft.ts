@@ -6,6 +6,8 @@ import type { ReceiptInput } from './types';
 export function pendingScan(source: 'scan' | 'import', today: string, currency: string): ReceiptInput {
   return {
     merchant: null,
+    merchantDisplay: null,
+    documentType: null,
     date: today,
     time: null,
     totalMinor: 0,

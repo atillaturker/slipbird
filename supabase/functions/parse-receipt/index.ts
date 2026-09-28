@@ -2,6 +2,7 @@
 // Stateless: receipt text is never logged or stored. Logs carry only user id, time, tokens, latency.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
+import { retryDelaySeconds } from './providers/gemini.ts';
 import { adapterFromEnv, createParser } from './providers/index.ts';
 import { ParserError, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
 import { currentMonth, FREE_MONTHLY_PARSES } from './quota.ts';
@@ -23,8 +24,13 @@ function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
 }
 
-function fail(code: ErrorCode): Response {
-  return json({ code }, STATUS[code]);
+function fail(code: ErrorCode, retryAfterSeconds: number | null = null): Response {
+  if (retryAfterSeconds === null) return json({ code }, STATUS[code]);
+  // The app's queue waits this long before trying again (Gemini's RetryInfo).
+  return new Response(JSON.stringify({ code, retryAfterSeconds }), {
+    status: STATUS[code],
+    headers: { 'content-type': 'application/json', 'retry-after': String(retryAfterSeconds) },
+  });
 }
 
 function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage; startedAt: number; provider?: ProviderErrorDetails | null }) {
@@ -99,7 +105,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     if (error instanceof ParserError) {
       log({ userId, outcome: error.code, usage: error.usage, provider: error.provider, startedAt });
-      return fail(error.code);
+      return fail(error.code, error.code === 'busy' ? retryDelaySeconds(error.provider?.retryDelay ?? null) : null);
     }
     log({ userId, outcome: 'provider_error', startedAt, provider: { httpStatus: null, errorStatus: null, message: error instanceof Error ? error.name : 'unknown', quotaId: null, quotaMetric: null, quotaValue: null, retryDelay: null } });
     return fail('provider_error');

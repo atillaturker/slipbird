@@ -3,19 +3,10 @@ import { assertEquals, assertRejects } from 'jsr:@std/assert@1';
 
 import { createParser } from './providers/index.ts';
 import { ParserError, type ProviderAdapter } from './providers/types.ts';
-import { parsedReceiptJsonSchema } from './schema.ts';
+import { cagriExpected, infoSlipExpected } from './fixtures.ts';
+import { parsedReceiptJsonSchema, ParsedReceiptSchema } from './schema.ts';
 
-const valid = {
-  merchant: { value: 'Migros', confidence: 'high' },
-  date: { value: '2026-10-12', time: '18:42', confidence: 'high' },
-  total: { value: '1.234,56', confidence: 'high' },
-  currency: { value: 'TRY', confidence: 'high' },
-  tax: [{ rate: 10, amount: '112,23' }],
-  items: [{ name: 'Süt', qty: 2, amount: '42,50' }],
-  paymentMethod: 'card',
-  category: { value: 'groceries', confidence: 'high' },
-  documentType: 'receipt',
-};
+const valid = cagriExpected;
 
 function fakeAdapter(outputs: string[]): ProviderAdapter & { calls: number } {
   const adapter = {
@@ -35,7 +26,7 @@ const hints = { locale: 'tr-TR', deviceCurrency: 'TRY', countryHint: 'TR' };
 Deno.test('returns a valid receipt on the first try', async () => {
   const adapter = fakeAdapter([JSON.stringify(valid)]);
   const { receipt, usage } = await createParser(adapter).parse('text', hints);
-  assertEquals(receipt.total.value, '1.234,56');
+  assertEquals(receipt.total.value, '529,03');
   assertEquals(adapter.calls, 1);
   assertEquals(usage, { inputTokens: 100, outputTokens: 50 });
 });
@@ -43,7 +34,7 @@ Deno.test('returns a valid receipt on the first try', async () => {
 Deno.test('retries once on invalid JSON', async () => {
   const adapter = fakeAdapter(['{not json', JSON.stringify(valid)]);
   const { receipt, usage } = await createParser(adapter).parse('text', hints);
-  assertEquals(receipt.merchant.value, 'Migros');
+  assertEquals(receipt.merchant.value, 'Çağrı Mağazacılık A.Ş.');
   assertEquals(adapter.calls, 2);
   assertEquals(usage, { inputTokens: 200, outputTokens: 100 });
 });
@@ -64,4 +55,23 @@ Deno.test('passes provider errors through (busy stays busy)', async () => {
 Deno.test('json schema is plain JSON Schema for the model', () => {
   assertEquals(parsedReceiptJsonSchema.$schema, undefined);
   assertEquals(parsedReceiptJsonSchema.type, 'object');
+});
+
+Deno.test('Çağrı receipt: legal name + display name, repaired item names, weighed line with unit', () => {
+  const r = ParsedReceiptSchema.parse(cagriExpected);
+  assertEquals([r.merchant.value, r.merchantDisplay], ['Çağrı Mağazacılık A.Ş.', 'Çağrı Market']);
+  assertEquals(r.items[2], { name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amount: '192,68' });
+  assertEquals(r.items.map((i) => i.name).join(' ').match(/[ÝÞÐýþð]|5EKER|Y0/g), null);
+});
+
+Deno.test('BİLGİ FİŞİ is an info_slip', () => {
+  assertEquals(ParsedReceiptSchema.parse(infoSlipExpected).documentType, 'info_slip');
+});
+
+Deno.test('outputs missing the new fields are rejected (and retried)', () => {
+  const { merchantDisplay: _drop, ...withoutDisplay } = cagriExpected;
+  assertEquals(ParsedReceiptSchema.safeParse(withoutDisplay).success, false);
+  const noUnit = { ...cagriExpected, items: [{ name: 'EKMEK', qty: 2, amount: '42,50' }] };
+  assertEquals(ParsedReceiptSchema.safeParse(noUnit).success, false);
+  assertEquals(ParsedReceiptSchema.safeParse({ ...cagriExpected, documentType: 'coupon' }).success, false);
 });

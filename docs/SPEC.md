@@ -38,18 +38,20 @@ Capture ──► image saved locally ──► QR found? ──yes──► Gİ
 - Output schema:
   ```json
   {
-    "merchant": { "value": "string|null", "confidence": "high|low" },
+    "merchant": { "value": "legal name, OCR errors fixed|null", "confidence": "high|low" },
+    "merchantDisplay": "short brand name shown in lists, e.g. Çağrı Market|null",
     "date": { "value": "YYYY-MM-DD|null", "time": "HH:mm|null", "confidence": "high|low" },
     "total": { "value": "string decimal as printed|null", "confidence": "high|low" },
     "currency": { "value": "ISO 4217|null", "confidence": "high|low" },
     "tax": [{ "rate": "number|null", "amount": "string" }],
-    "items": [{ "name": "string", "qty": "number|null", "amount": "string" }],
+    "items": [{ "name": "string (Turkish letters repaired)", "qty": "number|null", "unit": "pcs|kg|l|null", "amount": "string" }],
     "paymentMethod": "card|cash|other|null",
     "category": { "value": "groceries|dining|transport|shopping|health|bills|home|entertainment|other", "confidence": "high|low" },
-    "documentType": "receipt|invoice|other"
+    "documentType": "receipt|invoice|info_slip|other"
   }
   ```
-- The prompt must: return amounts exactly as printed (the app parses them), prefer the line labelled TOTAL / TOPLAM / GENEL TOPLAM / ÖDENECEK, mark `low` when unsure or when items don't sum to the total within 1%, never invent a merchant.
+- The prompt must: return amounts exactly as printed (the app parses them), prefer the line labelled TOTAL / TOPLAM / GENEL TOPLAM / ÖDENECEK, mark `low` when unsure or when items don't sum to the total within 1%, never invent a merchant. It fixes obvious OCR errors in the merchant name (legal name in `merchant`, short brand in `merchantDisplay`) and garbled Turkish letters in item names, but never changes amounts. Weighed lines ("0,876 KG X 219,95") give `qty` 0.876 and `unit` kg. "BİLGİ FİŞİ" / "MALİ DEĞERİ YOKTUR" slips are `info_slip`.
+- Provider errors: a 429 with quota limit 0 is `config_error` (the app stops retrying and asks for manual entry); other 429s/503s are `busy` with `retryAfterSeconds` from the provider's RetryInfo, which the app's queue honours.
 - Stateless: do not log or store receipt text. Log only user id, timestamp, token counts, latency.
 - Quota: table `scan_usage(user_id, month, count)`; free users get 15 parses per calendar month (constant in one place). Over quota → 402 with `{ code: "quota_exceeded" }`; the app shows the paywall (M7) and still allows manual entry.
 - Errors return `{ code }`; the app maps codes to translated messages.

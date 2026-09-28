@@ -154,7 +154,8 @@
     "needsReview": "Kontrol gerekli",
     "queued": "Çevrimdışı — sırada",
     "failed": "Okunamadı",
-    "readyToSave": "Kaydetmeye hazır"
+    "readyToSave": "Kaydetmeye hazır",
+    "infoSlip": "Bilgi fişi"
   },
   "payment": {
     "card": "Kart",
@@ -186,7 +187,7 @@
     "noItems": "Ürünler isteğe bağlıdır. Çoğu fiş yalnızca toplamla kaydedilir.",
     "addItem": "Ürün ekle",
     "itemName": "Ürün",
-    "itemQty": "Adet",
+    "itemQty": "Miktar",
     "itemAmount": "Tutar",
     "remove": "Kaldır",
     "removeItem": "{{n}}. ürünü kaldır",
@@ -203,7 +204,8 @@
       "itemNameRequired": "Ürünün adını girin",
       "qtyInvalid": "2 ya da 0,5 gibi bir sayı girin",
       "rateInvalid": "0 ile 100 arasında bir oran girin"
-    }
+    },
+    "itemQtyUnit": "Miktar ({{unit}})"
   },
   "currencyPicker": {
     "title": "Para birimi",
@@ -223,13 +225,16 @@
     "deleteBody": "Bu işlem geri alınamaz.",
     "deleteConfirm": "Sil",
     "cancel": "Vazgeç",
-    "qty": "{{qty}} ×",
     "vat": "KDV %{{rate}}",
     "vatNoRate": "KDV",
     "category": "Kategori",
     "payment": "Ödeme yöntemi",
     "note": "Not",
-    "added": "Eklenme"
+    "added": "Eklenme",
+    "qtyPcs": "{{qty}} adet",
+    "qtyKg": "{{qty}} kg",
+    "qtyL": "{{qty}} L",
+    "legalName": "Ticari unvan"
   },
   "qr": {
     "close": "Kapat",
@@ -274,7 +279,9 @@
       "itemsMismatch": "Ürünlerin toplamı bu tutarı tutmuyor",
       "totalCheck": "Toplamı kontrol edin",
       "currencyCheck": "Para birimini kontrol edin",
-      "categoryCheck": "Kategoriyi kontrol edin"
+      "categoryCheck": "Kategoriyi kontrol edin",
+      "itemsShort": "Ürünlerin toplamı {{sum}} — {{diff}} eksik",
+      "itemsOver": "Ürünlerin toplamı {{sum}} — {{diff}} fazla"
     },
     "processing": "Bu fiş hâlâ okunuyor. Kendiniz doldurabilir ya da bekleyebilirsiniz."
   },
@@ -290,5 +297,10 @@
   },
   "zoom": {
     "hint": "Yakınlaştırmak için iki parmakla açın, sıfırlamak için iki kez dokunun"
+  },
+  "units": {
+    "pcs": "adet",
+    "kg": "kg",
+    "l": "L"
   }
 }

@@ -51,6 +51,27 @@ export function describeGeminiError(httpStatus: number | null, bodyText: string 
   };
 }
 
+/** Gemini's RetryInfo delay ("34s", "0.5s") in whole seconds, rounded up; null if absent or unreadable. */
+export function retryDelaySeconds(delay: string | null): number | null {
+  const m = delay ? /^(\d+(?:\.\d+)?)s$/.exec(delay.trim()) : null;
+  return m ? Math.ceil(Number(m[1])) : null;
+}
+
+/**
+ * A 429 whose quota limit is 0: this key/project has no quota for the model at all, so retrying
+ * can't help (wrong model id for the free tier, or billing needed) — a configuration problem.
+ */
+export function isZeroQuota(details: ProviderErrorDetails): boolean {
+  return details.quotaValue === '0' || /\blimit:\s*0\b/.test(details.message ?? '');
+}
+
+/** What a failed Gemini call means for the app: config_error (limit 0), busy (retry later), provider_error. */
+export function classifyGeminiFailure(details: ProviderErrorDetails): 'config_error' | 'busy' | 'provider_error' {
+  if (details.httpStatus === 429) return isZeroQuota(details) ? 'config_error' : 'busy';
+  if (details.httpStatus === 503) return 'busy';
+  return 'provider_error';
+}
+
 export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
   return {
     name: 'gemini',
@@ -78,8 +99,8 @@ export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
 
       if (!response.ok) {
         const details = describeGeminiError(response.status, await response.text().catch(() => null), apiKey);
-        // 429 = rate limit or quota (see quotaId/quotaValue); 503 = overloaded. Both are worth retrying later.
-        throw new ParserError(response.status === 429 || response.status === 503 ? 'busy' : 'provider_error', undefined, details);
+        // 429 = rate limit (retry after retryDelay) or no quota at all (limit 0 → config_error); 503 = overloaded.
+        throw new ParserError(classifyGeminiFailure(details), undefined, details);
       }
 
       const body = (await response.json()) as GeminiResponse;

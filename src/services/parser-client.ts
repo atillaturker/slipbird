@@ -6,11 +6,15 @@ import { ensureSession, supabase } from './supabase';
 
 /**
  * retryable — keep the receipt queued: offline, provider busy, session problem, server hiccup.
- * quota_exceeded / parse_failed / rejected — don't retry; the person fills the receipt in.
+ * quota_exceeded / parse_failed / rejected / unavailable — don't retry; the person fills the receipt in.
+ * `unavailable` = the backend can't parse at all (e.g. no LLM quota for the model): retrying for hours won't help.
  */
-export type ParseFailure = 'offline' | 'busy' | 'retryable' | 'quota_exceeded' | 'parse_failed' | 'rejected';
+export type ParseFailure = 'offline' | 'busy' | 'retryable' | 'quota_exceeded' | 'parse_failed' | 'rejected' | 'unavailable';
 
-export type ParseResult = { ok: true; receipt: ParsedReceipt } | { ok: false; error: ParseFailure };
+export type ParseResult =
+  | { ok: true; receipt: ParsedReceipt }
+  /** `retryAfterMs`: the provider said when to try again (busy only). */
+  | { ok: false; error: ParseFailure; retryAfterMs?: number };
 
 export type ParseInput = { text: string; locale: string; deviceCurrency: string; countryHint: string | null };
 
@@ -28,6 +32,8 @@ function fromCode(status: number, code: string | undefined): ParseFailure {
       return 'parse_failed';
     case 'bad_request':
       return 'rejected';
+    case 'config_error':
+      return 'unavailable';
     case 'busy':
       return 'busy';
     default:
@@ -45,14 +51,16 @@ export async function parseReceiptText(input: ParseInput): Promise<ParseResult> 
 
   if (error instanceof FunctionsHttpError) {
     const response = error.context as Response;
-    let code: string | undefined;
+    let body: { code?: string; retryAfterSeconds?: number } = {};
     try {
-      code = ((await response.json()) as { code?: string }).code;
+      body = (await response.json()) as typeof body;
     } catch {
-      code = undefined;
+      body = {};
     }
     if (response.status === 401) await supabase.auth.signOut().catch(() => undefined);
-    return { ok: false, error: fromCode(response.status, code) };
+    const failure = fromCode(response.status, body.code);
+    const retryAfter = typeof body.retryAfterSeconds === 'number' && body.retryAfterSeconds > 0 ? body.retryAfterSeconds * 1000 : undefined;
+    return failure === 'busy' && retryAfter ? { ok: false, error: failure, retryAfterMs: retryAfter } : { ok: false, error: failure };
   }
   if (error instanceof FunctionsFetchError || error instanceof FunctionsRelayError) return { ok: false, error: 'offline' };
   return { ok: false, error: 'retryable' };

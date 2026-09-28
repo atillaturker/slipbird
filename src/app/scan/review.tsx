@@ -15,10 +15,10 @@ import { PageViewer } from '@/components/PageViewer';
 import { TaxLinesEditor } from '@/components/TaxLinesEditor';
 import { formatReceiptDate, fromISODate, toISODate } from '@/lib/dates';
 import { currencySymbol, formatMoney } from '@/lib/money';
-import { errorLocation, type ReceiptFormError } from '@/lib/receipt-form';
+import { errorLocation, itemsDifference, type ReceiptFormError } from '@/lib/receipt-form';
 import { firstLowField, type ReviewFieldKey } from '@/lib/receipt-normalize';
 import { flagMessage } from '@/lib/review-flags';
-import { paymentMethods, type PaymentMethod, type ReceiptSummary } from '@/lib/types';
+import { displayMerchant, paymentMethods, type PaymentMethod, type ReceiptSummary } from '@/lib/types';
 import { useReceiptForm } from '@/store/use-receipt-form';
 import { useTheme } from '@/theme';
 
@@ -62,7 +62,15 @@ export default function ReviewScreen() {
 
   const flagProps = (key: ReviewFieldKey) => {
     const c = fieldConfidence?.[key];
-    return c?.confidence === 'low' ? { confidence: 'low' as const, flag: t(`review.flags.${flagMessage(key, c.reason)}`) } : { confidence: 'high' as const };
+    if (c?.confidence !== 'low') return { confidence: 'high' as const };
+    // Items vs total: say by how much, from what's on screen now.
+    const difference = c.reason === 'itemsMismatch' && form ? itemsDifference(form, lang) : null;
+    if (difference && difference.diffMinor !== 0 && form) {
+      const money = (minor: number) => formatMoney(minor, form.currency, lang);
+      const args = { sum: money(difference.sumMinor), diff: money(Math.abs(difference.diffMinor)) };
+      return { confidence: 'low' as const, flag: t(difference.diffMinor > 0 ? 'review.flags.itemsShort' : 'review.flags.itemsOver', args) };
+    }
+    return { confidence: 'low' as const, flag: t(`review.flags.${flagMessage(key, c.reason)}`) };
   };
 
   const screen = <Stack.Screen options={{ title: t('review.title') }} />;
@@ -231,7 +239,7 @@ export default function ReviewScreen() {
         visible={duplicate !== null}
         existing={
           duplicate && {
-            merchant: duplicate.merchant ?? t('receipts.unknownMerchant'),
+            merchant: displayMerchant(duplicate) ?? t('receipts.unknownMerchant'),
             date: formatReceiptDate(duplicate.date, duplicate.time, lang),
             amount: formatMoney(duplicate.totalMinor, duplicate.currency, lang),
           }

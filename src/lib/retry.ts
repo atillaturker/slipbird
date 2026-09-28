@@ -4,6 +4,7 @@ export type QueueItem = { receiptId: string; attempts: number; nextAttemptAt: nu
 
 const BASE_DELAY_MS = 30_000;
 const MAX_DELAY_MS = 60 * 60_000;
+const MIN_DELAY_MS = 1_000;
 
 /** Exponential backoff: 30 s, 1 min, 2 min, … capped at 1 hour. `attempts` = failures so far. */
 export function retryDelayMs(attempts: number): number {
@@ -19,9 +20,16 @@ export function dequeue(queue: QueueItem[], receiptId: string): QueueItem[] {
   return queue.filter((q) => q.receiptId !== receiptId);
 }
 
-/** After a failed attempt: count it and push the next try out. */
-export function reschedule(queue: QueueItem[], receiptId: string, now: number): QueueItem[] {
-  return queue.map((q) => (q.receiptId === receiptId ? { ...q, attempts: q.attempts + 1, nextAttemptAt: now + retryDelayMs(q.attempts + 1) } : q));
+/**
+ * After a failed attempt: count it and push the next try out — by `delayMs` when the provider said
+ * when to retry (clamped to 1 s…1 h), otherwise by exponential backoff.
+ */
+export function reschedule(queue: QueueItem[], receiptId: string, now: number, delayMs?: number): QueueItem[] {
+  return queue.map((q) => {
+    if (q.receiptId !== receiptId) return q;
+    const delay = delayMs !== undefined ? Math.min(MAX_DELAY_MS, Math.max(MIN_DELAY_MS, delayMs)) : retryDelayMs(q.attempts + 1);
+    return { ...q, attempts: q.attempts + 1, nextAttemptAt: now + delay };
+  });
 }
 
 /** Items due now, oldest first. `force` ignores backoff (connectivity just came back). */

@@ -10,6 +10,7 @@ import { formatReceiptDate } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { formatDecimal } from '@/lib/number';
 import { receiptBadge } from '@/lib/receipt-status';
+import { displayMerchant } from '@/lib/types';
 import { imageUri } from '@/services/images';
 import { useReceipt, useReceipts } from '@/store/receipts';
 import { useScanActions } from '@/store/scan';
@@ -77,13 +78,13 @@ export default function ReceiptDetailScreen() {
       contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[12], gap: space[6] }}>
       {screen}
       <ReceiptCard
-        merchant={receipt.merchant ?? t('receipts.unknownMerchant')}
+        merchant={displayMerchant(receipt) ?? t('receipts.unknownMerchant')}
         date={formatReceiptDate(receipt.date, receipt.time, lang)}
         number={receipt.documentNumber ?? undefined}
         badge={badge ? { tone: badge.tone, label: t(`status.${badge.label}`) } : undefined}
         items={receipt.items.map((item) => ({
           name: item.name,
-          qty: item.qty === null ? undefined : t('detail.qty', { qty: formatDecimal(item.qty, lang) }),
+          qty: item.qty === null ? undefined : t(item.unit === 'kg' ? 'detail.qtyKg' : item.unit === 'l' ? 'detail.qtyL' : 'detail.qtyPcs', { qty: formatDecimal(item.qty, lang) }),
           amount: money(item.amountMinor),
         }))}
         tax={receipt.taxes.map((tax) => ({
@@ -100,6 +101,9 @@ export default function ReceiptDetailScreen() {
           <View style={{ width: space[2], height: space[2], borderRadius: radius.full, backgroundColor: categories[receipt.category] }} />
           <Text style={[type.body, { color: colors.ink }]}>{t(`category.${receipt.category}`)}</Text>
         </InfoRow>
+        {receipt.merchantDisplay && receipt.merchant && receipt.merchant !== receipt.merchantDisplay ? (
+          <InfoRow label={t('detail.legalName')}>{receipt.merchant}</InfoRow>
+        ) : null}
         {receipt.paymentMethod ? <InfoRow label={t('detail.payment')}>{t(`payment.${receipt.paymentMethod}`)}</InfoRow> : null}
         {receipt.note ? <InfoRow label={t('detail.note')}>{receipt.note}</InfoRow> : null}
       </ListGroup>

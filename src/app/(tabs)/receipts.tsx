@@ -13,6 +13,7 @@ import { SearchField } from '@/components/SearchField';
 import { dayLabel, groupByDay } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { receiptBadge } from '@/lib/receipt-status';
+import { displayMerchant } from '@/lib/types';
 import { thumbnailUri } from '@/services/images';
 import { useReceipts } from '@/store/receipts';
 import { categoryOrder, useTheme } from '@/theme';
@@ -103,7 +104,7 @@ export default function ReceiptsScreen() {
         return (
           <GroupRow first={index === 0} last={index === section.data.length - 1}>
             <ReceiptRow
-              merchant={item.merchant ?? t('receipts.unknownMerchant')}
+              merchant={displayMerchant(item) ?? t('receipts.unknownMerchant')}
               category={item.category}
               categoryLabel={t(`category.${item.category}`)}
               date={item.time ?? section.label}

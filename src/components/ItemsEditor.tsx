@@ -37,7 +37,9 @@ export function ItemsEditor({ items, errors, symbol, onChange, onAdd, onRemove }
           </View>
           <View style={{ flexDirection: 'row', gap: space[3] }}>
             <View style={{ flex: 2 }}>
-              <TextField label={t('receiptForm.itemQty')} value={item.qty} figure error={err(errors[i]?.qty)} onChangeText={(v) => onChange(i, { qty: v })} />
+              <TextField
+                label={item.unit ? t('receiptForm.itemQtyUnit', { unit: t(`units.${item.unit}`) }) : t('receiptForm.itemQty')}
+                value={item.qty} figure error={err(errors[i]?.qty)} onChangeText={(v) => onChange(i, { qty: v })} />
             </View>
             <View style={{ flex: 3 }}>
               <TextField

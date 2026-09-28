@@ -58,7 +58,7 @@ export function useReceiptForm(id: string | undefined) {
     if (key === 'merchant' || key === 'date' || key === 'total') setErrors((e) => ({ ...e, [key]: undefined }));
   };
 
-  const addItem = () => update({ items: [...(form?.items ?? []), { name: '', qty: '', amount: '' }] });
+  const addItem = () => update({ items: [...(form?.items ?? []), { name: '', qty: '', unit: null, amount: '' }] });
   const updateItem = (index: number, patch: Partial<ReceiptForm['items'][number]>) =>
     update({ items: (form?.items ?? []).map((item, i) => (i === index ? { ...item, ...patch } : item)) });
   const removeItem = (index: number) => {
@@ -88,8 +88,15 @@ export function useReceiptForm(id: string | undefined) {
       return { ok: false, errors: result.errors };
     }
     setErrors(NO_ERRORS);
+    // The form edits the display name. With a printed legal name, that stays and the typed name becomes the
+    // display name; without one, the typed name is the merchant.
+    const typed = result.input.merchant;
+    const legal = existing?.merchant?.trim() || null;
     const input: ReceiptInput = {
       ...result.input,
+      merchant: legal ?? typed,
+      merchantDisplay: legal && typed !== legal ? typed : null,
+      documentType: existing?.documentType ?? null,
       time: existing?.time ?? null,
       source: existing?.source ?? 'manual',
       status: 'saved',

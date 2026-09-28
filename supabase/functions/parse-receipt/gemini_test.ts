@@ -56,7 +56,7 @@ Deno.test('adapter maps 429/503 to busy and other failures to provider_error, wi
   const receiptText = 'MIGROS TOPLAM 1.234,56 SECRET-RECEIPT-LINE';
   try {
     for (const [status, body, code] of [
-      [429, quotaZero, 'busy'],
+      [429, quotaZero, 'config_error'],
       [503, overloaded, 'busy'],
       [400, JSON.stringify({ error: { status: 'INVALID_ARGUMENT', message: 'Invalid schema' } }), 'provider_error'],
     ] as const) {
@@ -78,4 +78,30 @@ Deno.test('adapter maps 429/503 to busy and other failures to provider_error, wi
   } finally {
     globalThis.fetch = originalFetch;
   }
+});
+
+Deno.test('limit 0 is a configuration problem, other 429s and 503s are busy', async () => {
+  const { classifyGeminiFailure, retryDelaySeconds } = await import('./providers/gemini.ts');
+  assertEquals(classifyGeminiFailure(describeGeminiError(429, quotaZero, KEY)), 'config_error');
+  const perMinute = JSON.stringify({
+    error: {
+      code: 429,
+      status: 'RESOURCE_EXHAUSTED',
+      message: 'Quota exceeded for metric: generate_content_free_tier_requests, limit: 15, model: gemini-x',
+      details: [
+        { '@type': 'type.googleapis.com/google.rpc.QuotaFailure', violations: [{ quotaId: 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', quotaValue: '15' }] },
+        { '@type': 'type.googleapis.com/google.rpc.RetryInfo', retryDelay: '21.4s' },
+      ],
+    },
+  });
+  const busy = describeGeminiError(429, perMinute, KEY);
+  assertEquals(classifyGeminiFailure(busy), 'busy');
+  assertEquals(retryDelaySeconds(busy.retryDelay), 22);
+  // "limit: 0" in the message counts even without QuotaFailure details; "limit: 10" does not.
+  assertEquals(classifyGeminiFailure({ ...busy, quotaValue: null, message: 'limit: 0, model: x' }), 'config_error');
+  assertEquals(classifyGeminiFailure({ ...busy, quotaValue: null, message: 'limit: 10, model: x' }), 'busy');
+  assertEquals(classifyGeminiFailure(describeGeminiError(503, overloaded, KEY)), 'busy');
+  assertEquals(classifyGeminiFailure(describeGeminiError(400, '{}', KEY)), 'provider_error');
+  assertEquals(retryDelaySeconds(null), null);
+  assertEquals(retryDelaySeconds('soon'), null);
 });

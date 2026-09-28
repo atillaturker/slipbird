@@ -11,9 +11,16 @@ export const categories = ['groceries', 'dining', 'transport', 'shopping', 'heal
 
 export const ParsedReceiptSchema = z.object({
   merchant: z.object({
-    value: z.string().nullable().describe('Store or business name as printed; null if not clearly printed. Never invent one.'),
+    value: z
+      .string()
+      .nullable()
+      .describe('Legal business name as printed, with obvious OCR errors fixed (e.g. "Çağrı Mağazacılık A.Ş."); null if not printed. Never invent one.'),
     confidence,
   }),
+  merchantDisplay: z
+    .string()
+    .nullable()
+    .describe('Short brand/store name people know, e.g. "Çağrı Market" for "Çağrı Mağazacılık A.Ş."; null if no merchant.'),
   date: z.object({
     value: z.string().nullable().describe('Purchase date as YYYY-MM-DD, or null'),
     time: z.string().nullable().describe('Purchase time as HH:mm (24h), or null'),
@@ -35,14 +42,15 @@ export const ParsedReceiptSchema = z.object({
   ),
   items: z.array(
     z.object({
-      name: z.string(),
-      qty: z.number().nullable(),
+      name: z.string().describe('Item name with Turkish characters repaired where OCR garbled them'),
+      qty: z.number().nullable().describe('Quantity or weight, e.g. 0.876 for "0,876 KG X 219,95"'),
+      unit: z.enum(['pcs', 'kg', 'l']).nullable().describe('pcs for counted items, kg or l for weighed/measured lines, null if not shown'),
       amount: z.string().describe('Line amount exactly as printed'),
     }),
   ),
   paymentMethod: z.enum(['card', 'cash', 'other']).nullable(),
   category: z.object({ value: z.enum(categories), confidence }),
-  documentType: z.enum(['receipt', 'invoice', 'other']),
+  documentType: z.enum(['receipt', 'invoice', 'info_slip', 'other']),
 });
 
 export type ParsedReceipt = z.infer<typeof ParsedReceiptSchema>;

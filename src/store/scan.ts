@@ -118,7 +118,7 @@ export async function processQueuedReceipt(receiptId: string): Promise<QueueOutc
   if (!current || current.status !== 'queued') return 'done';
 
   if (!result.ok) {
-    if (isRetryable(result.error)) return 'retry';
+    if (isRetryable(result.error)) return result.retryAfterMs ? { retryAfterMs: result.retryAfterMs } : 'retry';
     if (result.error === 'quota_exceeded') noticeQuotaOnce();
     await save({ ...toInput(current), status: 'needs_review', fieldConfidence: unparsedConfidence(current.fieldConfidence) }, receiptId);
     return 'done';

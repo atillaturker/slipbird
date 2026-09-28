@@ -7,7 +7,7 @@ import { fromISODate, toISODate } from './dates';
 import type { GibQr } from './gib-qr';
 import { detectNumberStyle, parseAmount } from './money';
 import type { Confidence, ParsedReceipt } from './parsed-receipt';
-import { paymentMethods, type PaymentMethod, type ReceiptItem, type ReceiptTax } from './types';
+import { documentTypes, itemUnits, paymentMethods, type DocumentType, type PaymentMethod, type ReceiptItem, type ReceiptTax } from './types';
 
 /** Fields the review screen flags. */
 export type ReviewFieldKey = 'merchant' | 'date' | 'total' | 'currency' | 'category';
@@ -20,6 +20,8 @@ export type FieldConfidence = Partial<Record<ReviewFieldKey, { confidence: Confi
 
 export type NormalizedReceipt = {
   merchant: string | null;
+  merchantDisplay: string | null;
+  documentType: DocumentType | null;
   date: string;
   time: string | null;
   totalMinor: number;
@@ -98,7 +100,9 @@ export function normalizeParsedReceipt(parsed: ParsedReceipt, ctx: NormalizeCont
     const amountMinor = amount(item.amount);
     const name = item.name.trim();
     if (amountMinor === null || !name) continue;
-    items.push({ name, qty: item.qty !== null && item.qty > 0 ? item.qty : null, amountMinor });
+    const qty = item.qty !== null && item.qty > 0 ? item.qty : null;
+    const unit = qty !== null && item.unit && itemUnits.includes(item.unit) ? item.unit : null;
+    items.push({ name, qty, unit, amountMinor });
   }
 
   const taxes: ReceiptTax[] = [];
@@ -125,6 +129,8 @@ export function normalizeParsedReceipt(parsed: ParsedReceipt, ctx: NormalizeCont
 
   return {
     merchant,
+    merchantDisplay: merchant ? parsed.merchantDisplay?.trim() || null : null,
+    documentType: documentTypes.includes(parsed.documentType) ? parsed.documentType : null,
     date,
     time: validTime(parsed.date.time),
     totalMinor,

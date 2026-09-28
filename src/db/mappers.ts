@@ -1,13 +1,15 @@
 import { categoryOrder, type Category } from '@/theme';
 
 import type { FieldConfidence } from '@/lib/receipt-normalize';
-import { paymentMethods, type PaymentMethod, type Receipt, type ReceiptItem, type ReceiptSource, type ReceiptStatus, type ReceiptSummary, type ReceiptTax } from '@/lib/types';
+import { documentTypes, itemUnits, paymentMethods, type DocumentType, type ItemUnit, type PaymentMethod, type Receipt, type ReceiptItem, type ReceiptSource, type ReceiptStatus, type ReceiptSummary, type ReceiptTax } from '@/lib/types';
 
 /** Row shapes as SQLite returns them. */
 export type ReceiptRow = {
   id: string;
   merchant: string | null;
   merchantNormalized: string | null;
+  merchantDisplay: string | null;
+  documentType: string | null;
   date: string;
   time: string | null;
   totalMinor: number;
@@ -26,7 +28,7 @@ export type ReceiptRow = {
   updatedAt: string;
 };
 export type ReceiptSummaryRow = Pick<ReceiptRow, keyof ReceiptSummary>;
-export type ItemRow = { name: string; qty: number | null; amountMinor: number };
+export type ItemRow = { name: string; qty: number | null; unit: string | null; amountMinor: number };
 export type TaxRow = { rate: number | null; amountMinor: number };
 
 const sources: readonly ReceiptSource[] = ['scan', 'gib_qr', 'manual', 'import'];
@@ -38,6 +40,14 @@ function oneOf<T extends string>(values: readonly T[], value: string | null, fal
 
 export function toCategory(value: string | null): Category {
   return oneOf(categoryOrder, value, 'other');
+}
+
+function toDocumentType(value: string | null): DocumentType | null {
+  return value && documentTypes.includes(value as DocumentType) ? (value as DocumentType) : null;
+}
+
+function toUnit(value: string | null): ItemUnit | null {
+  return value && itemUnits.includes(value as ItemUnit) ? (value as ItemUnit) : null;
 }
 
 function toPaymentMethod(value: string | null): PaymentMethod | null {
@@ -67,6 +77,8 @@ export function rowToSummary(row: ReceiptSummaryRow): ReceiptSummary {
   return {
     id: row.id,
     merchant: row.merchant,
+    merchantDisplay: row.merchantDisplay,
+    documentType: toDocumentType(row.documentType),
     date: row.date,
     time: row.time,
     totalMinor: row.totalMinor,
@@ -90,7 +102,7 @@ export function rowToReceipt(row: ReceiptRow, items: ItemRow[], taxes: TaxRow[])
     documentNumber: row.documentNumber,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
-    items: items.map((i): ReceiptItem => ({ name: i.name, qty: i.qty, amountMinor: i.amountMinor })),
+    items: items.map((i): ReceiptItem => ({ name: i.name, qty: i.qty, unit: toUnit(i.unit), amountMinor: i.amountMinor })),
     taxes: taxes.map((t): ReceiptTax => ({ rate: t.rate, amountMinor: t.amountMinor })),
   };
 }

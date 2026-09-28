@@ -21,4 +21,14 @@ describe('receiptBadge', () => {
   it('leaves processing to the row', () => {
     expect(receiptBadge({ source: 'scan', status: 'processing' })).toBeNull();
   });
+
+  it('labels info slips, after anything that needs attention', () => {
+    expect(receiptBadge({ source: 'scan', status: 'saved', documentType: 'info_slip' })).toEqual({ tone: 'neutral', label: 'infoSlip' });
+    expect(receiptBadge({ source: 'scan', status: 'needs_review', documentType: 'info_slip', fieldConfidence: { total: { confidence: 'high' } } })).toEqual({
+      tone: 'neutral',
+      label: 'infoSlip',
+    });
+    expect(receiptBadge({ source: 'scan', status: 'needs_review', documentType: 'info_slip', fieldConfidence: { total: { confidence: 'low' } } })?.label).toBe('needsReview');
+    expect(receiptBadge({ source: 'scan', status: 'queued', documentType: 'info_slip' })?.label).toBe('queued');
+  });
 });
