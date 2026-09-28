@@ -2,10 +2,12 @@ import Storage from 'expo-sqlite/kv-store';
 
 import { parseRates, ratesAreFresh, type Rates } from '@/lib/currency-convert';
 
+import { CACHE_KEYS } from './kv-keys';
+
 // Frankfurter: free, keyless daily reference rates (https://frankfurter.dev). v2 returns
 // [{ date, base, quote, rate }] with `rate` = quote units per 1 base unit.
 const ENDPOINT = 'https://api.frankfurter.dev/v2/rates';
-const CACHE_KEY = 'exchangeRates';
+const CACHE_KEY = CACHE_KEYS.exchangeRates;
 const TIMEOUT_MS = 8_000;
 
 type Cached = { rates: Rates; fetchedAt: number };

@@ -1,4 +1,4 @@
-import { currencyExponent, currencySymbol, detectNumberStyle, formatAmountInput, formatMoney, formatMoneyShort, parseAmount } from '../money';
+import { currencyExponent, currencySymbol, detectNumberStyle, formatAmountInput, formatDecimalAmount, formatMoney, formatMoneyShort, parseAmount } from '../money';
 
 // Intl may use narrow/no-break spaces; compare with plain spaces.
 const plain = (s: string) => s.replace(/[  ]/g, ' ');
@@ -143,5 +143,24 @@ describe('formatMoneyShort', () => {
     expect(plain(formatMoneyShort(1234500, 'TRY', 'tr'))).toMatch(/12,3 ?B/);
     expect(formatMoneyShort(1234500, 'TRY', 'tr')).toContain('₺');
     expect(plain(formatMoneyShort(98000, 'USD', 'en'))).toBe('$980');
+  });
+});
+
+describe('formatDecimalAmount', () => {
+  it('writes plain decimals with dot separators', () => {
+    expect(formatDecimalAmount(123456, 'TRY')).toBe('1234.56');
+    expect(formatDecimalAmount(5, 'USD')).toBe('0.05');
+    expect(formatDecimalAmount(0, 'USD')).toBe('0.00');
+    expect(formatDecimalAmount(-1250, 'EUR')).toBe('-12.50');
+  });
+
+  it('follows the currency exponent', () => {
+    expect(formatDecimalAmount(1500, 'JPY')).toBe('1500');
+    expect(formatDecimalAmount(1234, 'KWD')).toBe('1.234');
+    expect(formatDecimalAmount(7, 'KWD')).toBe('0.007');
+  });
+
+  it('round-trips through parseAmount', () => {
+    for (const minor of [0, 1, 99, 100, 123456, -5000]) expect(parseAmount(formatDecimalAmount(minor, 'TRY'), 'TRY')).toBe(minor);
   });
 });

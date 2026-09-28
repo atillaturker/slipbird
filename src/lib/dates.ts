@@ -63,3 +63,9 @@ export function monthLabel(month: string, language: string): string {
   const date = fromISODate(`${month}-01`);
   return date ? format(date, 'MMM', { locale: dateLocale(language) }) : month;
 }
+
+/** Month and year for titles: "October 2026" / "Ekim 2026". `month` is YYYY-MM. */
+export function monthTitle(month: string, language: string): string {
+  const date = fromISODate(`${month}-01`);
+  return date ? format(date, 'LLLL yyyy', { locale: dateLocale(language) }) : month;
+}

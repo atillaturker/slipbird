@@ -21,6 +21,7 @@ import { findGibQr, importPhotos, scanDocument, type Capture } from '@/services/
 import { saveReceiptImages } from '@/services/images';
 import { recognizePages } from '@/services/ocr';
 import { isRetryable, parseReceiptText } from '@/services/parser-client';
+import { CACHE_KEYS } from '@/services/kv-keys';
 import { claimParse, releaseParse } from '@/services/parse-lease';
 import { enqueueReceipt, type QueueOutcome } from '@/services/scan-queue';
 
@@ -100,7 +101,7 @@ function toInput(r: Receipt): ReceiptInput {
   return input;
 }
 
-const QUOTA_NOTICE_KEY = 'quotaNoticeMonth';
+const QUOTA_NOTICE_KEY = CACHE_KEYS.quotaNoticeMonth;
 
 function noticeQuotaOnce() {
   const month = today().slice(0, 7);

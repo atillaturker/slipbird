@@ -3,7 +3,7 @@ import type { SQLiteDatabase } from 'expo-sqlite';
 import { createId } from '@/lib/id';
 import { normalizeMerchant } from '@/lib/merchant-rules';
 import { buildSearchText, likePattern } from '@/lib/search';
-import type { Receipt, ReceiptInput, ReceiptSummary } from '@/lib/types';
+import type { PaymentMethod, Receipt, ReceiptInput, ReceiptSource, ReceiptSummary } from '@/lib/types';
 import type { Category } from '@/theme';
 
 import { rowToReceipt, rowToSummary, type ItemRow, type ReceiptRow, type ReceiptSummaryRow, type TaxRow } from './mappers';
@@ -14,6 +14,12 @@ const ORDER = 'ORDER BY date DESC, time DESC, createdAt DESC';
 export type ReceiptFilter = {
   query?: string;
   category?: Category | null;
+  /** Inclusive YYYY-MM-DD bounds. */
+  from?: string | null;
+  to?: string | null;
+  /** Empty or missing = any. */
+  sources?: ReceiptSource[];
+  payments?: PaymentMethod[];
 };
 
 export async function listReceipts(db: SQLiteDatabase, filter: ReceiptFilter = {}): Promise<ReceiptSummary[]> {
@@ -26,6 +32,22 @@ export async function listReceipts(db: SQLiteDatabase, filter: ReceiptFilter = {
   if (filter.category) {
     where.push('category = ?');
     params.push(filter.category);
+  }
+  if (filter.from) {
+    where.push('date >= ?');
+    params.push(filter.from);
+  }
+  if (filter.to) {
+    where.push('date <= ?');
+    params.push(filter.to);
+  }
+  if (filter.sources?.length) {
+    where.push(`source IN (${filter.sources.map(() => '?').join(', ')})`);
+    params.push(...filter.sources);
+  }
+  if (filter.payments?.length) {
+    where.push(`paymentMethod IN (${filter.payments.map(() => '?').join(', ')})`);
+    params.push(...filter.payments);
   }
   const sql = `SELECT ${SUMMARY_COLUMNS} FROM receipts ${where.length ? `WHERE ${where.join(' AND ')}` : ''} ${ORDER}`;
   const rows = await db.getAllAsync<ReceiptSummaryRow>(sql, params);

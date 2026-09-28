@@ -108,6 +108,8 @@ Tab bar: Home · Receipts · (Scan) · Insights · Budgets. Settings via the gea
 
 **Settings:** Home currency, Language (System / English / Türkçe), Budget alerts, Export (CSV of receipts + items for a date range; PDF monthly report with category totals and receipt list), Delete all data, Privacy policy, Rate Slipbird, Version, Slipbird Pro (M7).
 
+M6 notes: Export CSV is one flat file, one row per item (a receipt without items is one row), UTF-8 with a byte-order mark, dot decimals, receipt totals on each receipt's first row only, text fields defused against spreadsheet formulas; OCR text and photos are never exported. The PDF report is per calendar month, totals in the home currency (an info slip linked to its invoice is counted once). Filters (date range, amount range in the home currency, source, payment method) open from the Receipts header. Delete all data removes receipts, photos, budgets, merchant rules, the scan queue, cached rates and exported files; language, home currency and alert settings stay. "Rate Slipbird" and "Slipbird Pro" arrive with M7 (they need the store listings and RevenueCat).
+
 ## 4. Milestones
 
 Each ends with typecheck, lint and tests passing, and a short summary.

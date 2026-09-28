@@ -3,6 +3,7 @@ import Storage from 'expo-sqlite/kv-store';
 import { i18n } from '@/i18n';
 import { formatMoney } from '@/lib/money';
 import { budgetAlertsDue, categoryTotals, countedSpend, periodRange } from '@/lib/spending';
+import { CACHE_KEYS } from '@/services/kv-keys';
 import { notifyNow } from '@/services/notifications';
 import type { Category } from '@/theme';
 
@@ -10,7 +11,7 @@ import { useBudgets } from './budgets';
 import { useSettings } from './settings';
 import { useSpending } from './spending';
 
-const SENT_KEY = 'budgetAlertsSent';
+const SENT_KEY = CACHE_KEYS.budgetAlertsSent;
 
 /**
  * Sends the budget alerts that are due (80% and 100%, once each per category per month) and remembers them.

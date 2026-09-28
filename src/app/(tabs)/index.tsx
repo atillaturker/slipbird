@@ -1,8 +1,10 @@
 import { router } from 'expo-router';
+import { GearSix } from 'phosphor-react-native';
 import { useTranslation } from 'react-i18next';
 import { Text, View } from 'react-native';
 
 import { BudgetBar, Button, CategoryBreakdown, EmptyState, MonthTotal } from '@/components';
+import { IconButton } from '@/components/IconButton';
 import { ListGroup } from '@/components/ListGroup';
 import { ReceiptSummaryRow } from '@/components/ReceiptSummaryRow';
 import { Screen } from '@/components/Screen';
@@ -26,10 +28,11 @@ export default function HomeScreen() {
   const budgets = useBudgets((s) => s.budgets);
   const setCategory = useReceipts((s) => s.setCategory);
   const money = (minor: number) => formatMoney(minor, view.home, i18n.language);
+  const gear = <IconButton icon={GearSix} label={t('settings.open')} onPress={() => router.push('/settings')} />;
 
   if (view.loaded && !view.hasAny) {
     return (
-      <Screen title={t('home.title')}>
+      <Screen title={t('home.title')} action={gear}>
         <EmptyState title={t('home.emptyTitle')} body={t('home.emptyBody')} action={<Button onPress={() => void scan()}>{t('home.emptyAction')}</Button>} />
         {__DEV__ && (
           <Button variant="ghost" size="md" onPress={() => router.push('/dev/components')}>
@@ -46,7 +49,7 @@ export default function HomeScreen() {
   );
 
   return (
-    <Screen title={t('home.title')}>
+    <Screen title={t('home.title')} action={gear}>
       <View style={{ gap: space[2] }}>
         <MonthTotal
           label={t('home.spent')}

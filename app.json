@@ -54,7 +54,8 @@
         {
           "cameraPermission": "Slipbird uses the camera to scan receipts and invoice QR codes. Photos stay on this device."
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

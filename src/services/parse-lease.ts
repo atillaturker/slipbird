@@ -2,7 +2,9 @@ import Storage from 'expo-sqlite/kv-store';
 
 import { acquireLease, clearLease, finishLease, parseLeases, pruneLeases, type Leases } from '@/lib/parse-lease';
 
-const LEASES_KEY = 'parseLeases';
+import { CACHE_KEYS } from './kv-keys';
+
+const LEASES_KEY = CACHE_KEYS.parseLeases;
 
 // Synchronous read-modify-write on the shared kv store: atomic within the JS runtime, and shared by every
 // copy of the queue module (so a stale copy after Fast Refresh can't parse the same receipt again).

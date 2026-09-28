@@ -1,5 +1,5 @@
 import { router, useFocusEffect } from 'expo-router';
-import { Plus } from 'phosphor-react-native';
+import { FunnelSimple, Plus } from 'phosphor-react-native';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { ScrollView, SectionList, Text, View } from 'react-native';
@@ -12,6 +12,7 @@ import { ReceiptSummaryRow } from '@/components/ReceiptSummaryRow';
 import { ScreenHeader } from '@/components/Screen';
 import { SearchField } from '@/components/SearchField';
 import { dayLabel, groupByDay } from '@/lib/dates';
+import { activeFilterCount } from '@/lib/receipt-filters';
 import { useReceipts } from '@/store/receipts';
 import { categoryOrder, useTheme } from '@/theme';
 
@@ -19,7 +20,8 @@ export default function ReceiptsScreen() {
   const { t, i18n } = useTranslation();
   const { colors, space, type } = useTheme();
   const insets = useSafeAreaInsets();
-  const { list, hasAny, loaded, query, category, setQuery, setCategory, refresh, remove } = useReceipts();
+  const { list, hasAny, loaded, query, category, filters, setQuery, setCategory, clearAll, refresh, remove } = useReceipts();
+  const filterCount = activeFilterCount(filters);
 
   useFocusEffect(
     useCallback(() => {
@@ -37,11 +39,26 @@ export default function ReceiptsScreen() {
   }, [list, i18n.language, t]);
 
   const addManually = () => router.push('/receipt/new');
-  const filtered = !!query.trim() || category !== null;
+  const filtered = !!query.trim() || category !== null || filterCount > 0;
 
   const header = (
     <View style={{ gap: space[4], paddingBottom: space[2] }}>
-      <ScreenHeader title={t('receipts.title')} action={<IconButton icon={Plus} label={t('receipts.addManually')} tone="stamp" onPress={addManually} />} />
+      <ScreenHeader
+        title={t('receipts.title')}
+        action={
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            {hasAny && (
+              <IconButton
+                icon={FunnelSimple}
+                label={filterCount > 0 ? t('filters.openActive', { count: filterCount }) : t('filters.open')}
+                tone={filterCount > 0 ? 'stamp' : 'ink'}
+                onPress={() => router.push('/filters')}
+              />
+            )}
+            <IconButton icon={Plus} label={t('receipts.addManually')} tone="stamp" onPress={addManually} />
+          </View>
+        }
+      />
       {hasAny && (
         <>
           <SearchField value={query} onChangeText={setQuery} label={t('receipts.search')} placeholder={t('receipts.searchPlaceholder')} clearLabel={t('receipts.clearSearch')} />
@@ -64,16 +81,10 @@ export default function ReceiptsScreen() {
     <EmptyState title={t('receipts.emptyTitle')} body={t('receipts.emptyBody')} action={<Button onPress={addManually}>{t('receipts.addManually')}</Button>} />
   ) : filtered ? (
     <EmptyState
-      title={category && !query.trim() ? t('receipts.categoryEmptyTitle', { category: t(`category.${category}`) }) : t('receipts.noMatchesTitle')}
+      title={category && !query.trim() && filterCount === 0 ? t('receipts.categoryEmptyTitle', { category: t(`category.${category}`) }) : t('receipts.noMatchesTitle')}
       body={t('receipts.noMatchesBody')}
       action={
-        <Button
-          variant="secondary"
-          size="md"
-          onPress={() => {
-            setQuery('');
-            setCategory(null);
-          }}>
+        <Button variant="secondary" size="md" onPress={clearAll}>
           {t('receipts.clearFilters')}
         </Button>
       }

@@ -181,3 +181,15 @@ export function formatMoneyShort(minor: number, currency: string, locale: string
   }
   return f.format(minor / 10 ** currencyExponent(currency));
 }
+
+/**
+ * A plain machine-readable decimal for exports: "1234.56", "-12.50", "1500" (0-decimal currency).
+ * Dot decimals, no grouping, no symbol — spreadsheets and scripts read it regardless of locale.
+ */
+export function formatDecimalAmount(minor: number, currency: string): string {
+  const exponent = currencyExponent(currency);
+  const sign = minor < 0 ? '-' : '';
+  const digits = String(Math.abs(minor)).padStart(exponent + 1, '0');
+  if (exponent === 0) return sign + digits;
+  return `${sign}${digits.slice(0, -exponent)}.${digits.slice(-exponent)}`;
+}

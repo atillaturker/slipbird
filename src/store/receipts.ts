@@ -4,9 +4,12 @@ import { create } from 'zustand';
 import { getDb } from '@/db';
 import { saveMerchantRule } from '@/db/merchant-rules';
 import { deleteReceipt, getReceipt, hasReceipts, listReceipts, saveReceipt } from '@/db/receipts';
+import { hasAmountFilter, matchesAmount, NO_FILTERS, type ReceiptFilters } from '@/lib/receipt-filters';
 import type { Receipt, ReceiptInput, ReceiptSummary } from '@/lib/types';
 import { deleteReceiptImages } from '@/services/images';
 import { removeFromQueue } from '@/services/scan-queue';
+import { useSettings } from './settings';
+import { useSpending } from './spending';
 import type { Category } from '@/theme';
 
 type ReceiptsState = {
@@ -16,10 +19,15 @@ type ReceiptsState = {
   loaded: boolean;
   query: string;
   category: Category | null;
+  /** The filter sheet's choices (date range, amount range, source, payment method). */
+  filters: ReceiptFilters;
   /** Bumped on every write so detail hooks refetch. */
   revision: number;
   setQuery: (query: string) => void;
   setCategory: (category: Category | null) => void;
+  setFilters: (filters: ReceiptFilters) => void;
+  /** Clears the search, the category chip and every filter. */
+  clearAll: () => void;
   refresh: () => Promise<void>;
   save: (input: ReceiptInput, id?: string) => Promise<string>;
   remove: (id: string) => Promise<void>;
@@ -31,6 +39,7 @@ export const useReceipts = create<ReceiptsState>((set, get) => ({
   loaded: false,
   query: '',
   category: null,
+  filters: NO_FILTERS,
   revision: 0,
 
   setQuery: (query) => {
@@ -42,12 +51,28 @@ export const useReceipts = create<ReceiptsState>((set, get) => ({
     void get().refresh();
   },
 
+  setFilters: (filters) => {
+    set({ filters });
+    void get().refresh();
+  },
+  clearAll: () => {
+    set({ query: '', category: null, filters: NO_FILTERS });
+    void get().refresh();
+  },
+
   refresh: async () => {
     const db = getDb();
-    const { query, category } = get();
-    const [list, hasAny] = await Promise.all([listReceipts(db, { query, category }), hasReceipts(db)]);
+    const { query, category, filters } = get();
+    const [found, hasAny] = await Promise.all([
+      listReceipts(db, { query, category, from: filters.from, to: filters.to, sources: filters.sources, payments: filters.payments }),
+      hasReceipts(db),
+    ]);
+    // Amounts are compared in the home currency, which SQL can't do: filter here with the cached rates.
+    const list = hasAmountFilter(filters)
+      ? found.filter((r) => matchesAmount(r, filters, useSpending.getState().rates, useSettings.getState().homeCurrency))
+      : found;
     // Ignore a stale response if the filter changed while this query ran.
-    if (get().query === query && get().category === category) set({ list, hasAny, loaded: true });
+    if (get().query === query && get().category === category && get().filters === filters) set({ list, hasAny, loaded: true });
   },
 
   save: async (input, id) => {

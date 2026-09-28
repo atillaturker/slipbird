@@ -4,9 +4,10 @@ import { AppState } from 'react-native';
 
 import { dequeue, dueItems, enqueue, parseQueue, postpone, reschedule, type QueueItem } from '@/lib/retry';
 
+import { CACHE_KEYS } from './kv-keys';
 import { forgetParse } from './parse-lease';
 
-const QUEUE_KEY = 'scanQueue';
+const QUEUE_KEY = CACHE_KEYS.scanQueue;
 
 /**
  * What processing one queued receipt ended in. `retryAfterMs` when the provider said when to retry;

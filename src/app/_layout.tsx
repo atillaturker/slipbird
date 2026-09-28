@@ -65,6 +65,10 @@ export default function RootLayout() {
           <Stack.Screen name="receipt/[id]" options={header} />
           <Stack.Screen name="receipt/new" options={{ ...header, presentation: 'modal' }} />
           <Stack.Screen name="budget/[category]" options={{ ...header, presentation: 'modal' }} />
+          <Stack.Screen name="filters" options={{ ...header, presentation: 'modal' }} />
+          <Stack.Screen name="settings/index" options={header} />
+          <Stack.Screen name="settings/export" options={header} />
+          <Stack.Screen name="settings/privacy" options={header} />
           <Stack.Screen name="scan/review" options={header} />
           <Stack.Screen name="scan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="dev/components" />
