@@ -88,31 +88,51 @@ export function parseAmount(input: string, currency: string, options: ParseOptio
   return negative && minor !== 0 ? -minor : minor;
 }
 
+const formatters = new Map<string, Intl.NumberFormat>();
+
+/**
+ * Cached formatter. Some JS engines (older Hermes builds) reject `currencyDisplay: 'narrowSymbol'`;
+ * fall back to the regular symbol rather than failing to show an amount.
+ */
+function formatter(locale: string, currency: string | null, exponent: number): Intl.NumberFormat {
+  const key = `${locale}|${currency ?? ''}|${exponent}`;
+  let f = formatters.get(key);
+  if (!f) {
+    const digits = { minimumFractionDigits: exponent, maximumFractionDigits: exponent };
+    if (!currency) {
+      f = new Intl.NumberFormat(locale, digits);
+    } else {
+      try {
+        f = new Intl.NumberFormat(locale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol', ...digits });
+      } catch {
+        f = new Intl.NumberFormat(locale, { style: 'currency', currency, ...digits });
+      }
+    }
+    formatters.set(key, f);
+  }
+  return f;
+}
+
 /** "₺1.234,56" (tr) / "$1,234.56" (en). */
 export function formatMoney(minor: number, currency: string, locale: string): string {
   const exponent = currencyExponent(currency);
-  return new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency,
-    currencyDisplay: 'narrowSymbol',
-    minimumFractionDigits: exponent,
-    maximumFractionDigits: exponent,
-  }).format(minor / 10 ** exponent);
+  return formatter(locale, currency, exponent).format(minor / 10 ** exponent);
 }
 
 /** The amount without a currency symbol, for editing in a field: "1.234,56" (tr) / "1,234.56" (en). */
 export function formatAmountInput(minor: number, currency: string, locale: string): string {
   const exponent = currencyExponent(currency);
-  return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: exponent,
-    maximumFractionDigits: exponent,
-  }).format(minor / 10 ** exponent);
+  return formatter(locale, null, exponent).format(minor / 10 ** exponent);
 }
 
 /** The narrow symbol for a currency in this locale ("₺", "$", "€"); falls back to the code. */
 export function currencySymbol(currency: string, locale: string): string {
-  const part = new Intl.NumberFormat(locale, { style: 'currency', currency, currencyDisplay: 'narrowSymbol' })
-    .formatToParts(0)
-    .find((p) => p.type === 'currency');
-  return part?.value ?? currency;
+  try {
+    const part = formatter(locale, currency, currencyExponent(currency))
+      .formatToParts(0)
+      .find((p) => p.type === 'currency');
+    return part?.value ?? currency;
+  } catch {
+    return currency;
+  }
 }

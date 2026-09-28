@@ -14,7 +14,7 @@ import { useTheme } from '@/theme';
 void SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const { scheme, colors } = useTheme();
+  const { scheme, colors, type } = useTheme();
   const [fontsLoaded, fontError] = useFonts({
     InstrumentSans_400Regular,
     InstrumentSans_500Medium,
@@ -36,12 +36,23 @@ export default function RootLayout() {
     colors: { ...base.colors, background: colors.paper, card: colors.paperRaised, text: colors.ink, border: colors.rule, primary: colors.stamp },
   };
 
+  const header = {
+    headerShown: true,
+    headerStyle: { backgroundColor: colors.paper },
+    headerShadowVisible: false,
+    headerTintColor: colors.stampInk,
+    headerTitleStyle: { fontFamily: type.headline.fontFamily, fontSize: type.headline.fontSize, color: colors.ink },
+    headerBackButtonDisplayMode: 'minimal',
+  } as const;
+
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.paper }}>
       <ThemeProvider value={navigationTheme}>
         <StatusBar style="auto" />
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.paper } }}>
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="receipt/[id]" options={header} />
+          <Stack.Screen name="receipt/new" options={{ ...header, presentation: 'modal' }} />
           <Stack.Screen name="dev/components" />
         </Stack>
       </ThemeProvider>

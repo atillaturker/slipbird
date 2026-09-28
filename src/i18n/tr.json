@@ -20,7 +20,17 @@
   "receipts": {
     "title": "Fişler",
     "emptyTitle": "Henüz fiş yok",
-    "emptyBody": "Taradığınız ya da eklediğiniz her fiş burada, en yenisi üstte listelenir."
+    "emptyBody": "Taradığınız ya da eklediğiniz her fiş burada, en yenisi üstte listelenir.",
+    "addManually": "Elle ekle",
+    "search": "Fişlerde ara",
+    "searchPlaceholder": "İşletme, not ya da ürün",
+    "all": "Tümü",
+    "unknownMerchant": "Bilinmeyen işletme",
+    "noMatchesTitle": "Eşleşen fiş yok",
+    "noMatchesBody": "Başka bir kelime deneyin ya da filtreleri kaldırın.",
+    "categoryEmptyTitle": "{{category}} kategorisinde fiş yok",
+    "clearFilters": "Filtreleri kaldır",
+    "clearSearch": "Aramayı temizle"
   },
   "insights": {
     "title": "Analiz",
@@ -122,5 +132,91 @@
   "receiptCard": {
     "total": "Toplam",
     "photo": "Fiş fotoğrafı {{n}}"
+  },
+  "dates": {
+    "today": "Bugün",
+    "yesterday": "Dün"
+  },
+  "status": {
+    "manual": "Manuel",
+    "eArsiv": "e-Arşiv",
+    "needsReview": "Kontrol gerekli",
+    "queued": "Çevrimdışı — sırada",
+    "failed": "Okunamadı"
+  },
+  "payment": {
+    "card": "Kart",
+    "cash": "Nakit",
+    "other": "Diğer"
+  },
+  "receiptForm": {
+    "titleNew": "Fiş ekle",
+    "titleEdit": "Fişi düzenle",
+    "cancel": "Vazgeç",
+    "tabReceipt": "Fiş",
+    "tabItems": "Ürünler",
+    "merchant": "İşletme",
+    "merchantPlaceholder": "Mağaza adı",
+    "date": "Tarih",
+    "total": "Toplam",
+    "currency": "Para birimi",
+    "changeCurrency": "Para birimini değiştir, şu an {{code}}",
+    "category": "Kategori",
+    "payment": "Ödeme yöntemi",
+    "note": "Not",
+    "notePlaceholder": "İsteğe bağlı",
+    "taxes": "KDV satırları",
+    "taxesCount": "KDV satırları ({{count}})",
+    "addTax": "KDV satırı ekle",
+    "taxRate": "Oran %",
+    "taxAmount": "Tutar",
+    "items": "Ürünler",
+    "noItems": "Ürünler isteğe bağlıdır. Çoğu fiş yalnızca toplamla kaydedilir.",
+    "addItem": "Ürün ekle",
+    "itemName": "Ürün",
+    "itemQty": "Adet",
+    "itemAmount": "Tutar",
+    "remove": "Kaldır",
+    "removeItem": "{{n}}. ürünü kaldır",
+    "removeTax": "{{n}}. KDV satırını kaldır",
+    "save": "Fişi kaydet",
+    "saveFailed": "Fiş kaydedilemedi. Tekrar deneyin.",
+    "errors": {
+      "merchantRequired": "Mağaza adını girin",
+      "dateInvalid": "Geçerli bir tarih seçin",
+      "dateFuture": "Gelecekte olmayan bir tarih seçin",
+      "totalRequired": "Toplamı girin",
+      "totalInvalid": "Sıfırdan büyük bir toplam girin, örneğin 12,50",
+      "amountInvalid": "12,50 gibi bir tutar girin",
+      "itemNameRequired": "Ürünün adını girin",
+      "qtyInvalid": "2 ya da 0,5 gibi bir sayı girin",
+      "rateInvalid": "0 ile 100 arasında bir oran girin"
+    }
+  },
+  "currencyPicker": {
+    "title": "Para birimi",
+    "search": "Para birimi ara",
+    "common": "Sık kullanılanlar",
+    "all": "Tüm para birimleri",
+    "done": "Bitti"
+  },
+  "detail": {
+    "title": "Fiş",
+    "notFound": "Bu fiş artık yok",
+    "notFoundBody": "Silinmiş olabilir.",
+    "back": "Fişlere dön",
+    "edit": "Fişi düzenle",
+    "delete": "Fişi sil",
+    "deleteTitle": "Bu fiş silinsin mi?",
+    "deleteBody": "Bu işlem geri alınamaz.",
+    "deleteConfirm": "Sil",
+    "cancel": "Vazgeç",
+    "qty": "{{qty}} ×",
+    "vat": "KDV %{{rate}}",
+    "vatNoRate": "KDV",
+    "category": "Kategori",
+    "payment": "Ödeme yöntemi",
+    "note": "Not",
+    "added": "Eklenme"
   }
 }

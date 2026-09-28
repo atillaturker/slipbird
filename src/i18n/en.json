@@ -20,7 +20,17 @@
   "receipts": {
     "title": "Receipts",
     "emptyTitle": "No receipts yet",
-    "emptyBody": "Every receipt you scan or add is listed here, newest first."
+    "emptyBody": "Every receipt you scan or add is listed here, newest first.",
+    "addManually": "Add manually",
+    "search": "Search receipts",
+    "searchPlaceholder": "Merchant, note or item",
+    "all": "All",
+    "unknownMerchant": "Unknown merchant",
+    "noMatchesTitle": "No matching receipts",
+    "noMatchesBody": "Try another word or clear the filters.",
+    "categoryEmptyTitle": "No {{category}} receipts",
+    "clearFilters": "Clear filters",
+    "clearSearch": "Clear search"
   },
   "insights": {
     "title": "Insights",
@@ -122,5 +132,91 @@
   "receiptCard": {
     "total": "Total",
     "photo": "Receipt photo {{n}}"
+  },
+  "dates": {
+    "today": "Today",
+    "yesterday": "Yesterday"
+  },
+  "status": {
+    "manual": "Manual",
+    "eArsiv": "e-Arşiv",
+    "needsReview": "Needs review",
+    "queued": "Offline — queued",
+    "failed": "Couldn’t read"
+  },
+  "payment": {
+    "card": "Card",
+    "cash": "Cash",
+    "other": "Other"
+  },
+  "receiptForm": {
+    "titleNew": "Add receipt",
+    "titleEdit": "Edit receipt",
+    "cancel": "Cancel",
+    "tabReceipt": "Receipt",
+    "tabItems": "Items",
+    "merchant": "Merchant",
+    "merchantPlaceholder": "Store name",
+    "date": "Date",
+    "total": "Total",
+    "currency": "Currency",
+    "changeCurrency": "Change currency, now {{code}}",
+    "category": "Category",
+    "payment": "Payment method",
+    "note": "Note",
+    "notePlaceholder": "Optional",
+    "taxes": "VAT lines",
+    "taxesCount": "VAT lines ({{count}})",
+    "addTax": "Add VAT line",
+    "taxRate": "Rate %",
+    "taxAmount": "Amount",
+    "items": "Items",
+    "noItems": "Items are optional. Many receipts are saved with just the total.",
+    "addItem": "Add item",
+    "itemName": "Item",
+    "itemQty": "Qty",
+    "itemAmount": "Amount",
+    "remove": "Remove",
+    "removeItem": "Remove item {{n}}",
+    "removeTax": "Remove VAT line {{n}}",
+    "save": "Save receipt",
+    "saveFailed": "Couldn’t save the receipt. Try again.",
+    "errors": {
+      "merchantRequired": "Add the store name",
+      "dateInvalid": "Pick a real date",
+      "dateFuture": "Pick a date that isn’t in the future",
+      "totalRequired": "Enter the total",
+      "totalInvalid": "Enter a total above zero, like 12.50",
+      "amountInvalid": "Enter an amount like 12.50",
+      "itemNameRequired": "Name the item",
+      "qtyInvalid": "Enter a number like 2 or 0.5",
+      "rateInvalid": "Enter a rate from 0 to 100"
+    }
+  },
+  "currencyPicker": {
+    "title": "Currency",
+    "search": "Search currencies",
+    "common": "Common",
+    "all": "All currencies",
+    "done": "Done"
+  },
+  "detail": {
+    "title": "Receipt",
+    "notFound": "This receipt no longer exists",
+    "notFoundBody": "It may have been deleted.",
+    "back": "Back to receipts",
+    "edit": "Edit receipt",
+    "delete": "Delete receipt",
+    "deleteTitle": "Delete this receipt?",
+    "deleteBody": "This can’t be undone.",
+    "deleteConfirm": "Delete",
+    "cancel": "Cancel",
+    "qty": "{{qty}} ×",
+    "vat": "VAT {{rate}}%",
+    "vatNoRate": "VAT",
+    "category": "Category",
+    "payment": "Payment method",
+    "note": "Note",
+    "added": "Added"
   }
 }

@@ -1,3 +1,5 @@
+import { foldText } from './search';
+
 /** Active ISO 4217 currencies (no funds, metals or test codes). */
 export const ISO_CURRENCIES = [
   'AED', 'AFN', 'ALL', 'AMD', 'ANG', 'AOA', 'ARS', 'AUD', 'AWG', 'AZN', 'BAM', 'BBD', 'BDT', 'BGN', 'BHD', 'BIF', 'BMD', 'BND', 'BOB', 'BRL',
@@ -25,9 +27,8 @@ export function currencyOptions(homeCurrency: string): { pinned: string[]; rest:
 
 /** Matches a typed query against the code and its display name, ignoring case and accents. */
 export function currencyMatches(code: string, name: string, query: string): boolean {
-  const fold = (s: string) => s.toLocaleLowerCase('en').normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/ı/g, 'i');
-  const q = fold(query.trim());
-  return q === '' || fold(code).includes(q) || fold(name).includes(q);
+  const q = foldText(query.trim());
+  return q === '' || foldText(code).includes(q) || foldText(name).includes(q);
 }
 
 /** The home currency default: the device region's currency when we support it, else USD. */
