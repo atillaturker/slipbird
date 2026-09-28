@@ -29,6 +29,7 @@ const savedReceipt = (): Receipt => ({
   documentNumber: null,
   imagePaths: [],
   fieldConfidence: null,
+  parseIssue: null,
   items: [{ name: 'Peynir', qty: 0.45, unit: 'kg', amountMinor: 21200 }],
   taxes: [{ rate: 10, amountMinor: 1927 }],
   createdAt: '',

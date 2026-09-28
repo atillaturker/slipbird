@@ -2,24 +2,27 @@ import RNDateTimePicker, { DateTimePickerAndroid } from '@react-native-community
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, Text, useWindowDimensions, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, Platform, type ScrollView, Text, useWindowDimensions, View } from 'react-native';
 
 import { Button, EmptyState, ReviewField, SegmentedControl, TextField } from '@/components';
 import { CategorySheet } from '@/components/CategorySheet';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { DuplicateSheet } from '@/components/DuplicateSheet';
 import { FieldLabel } from '@/components/FieldLabel';
+import { FormScreen } from '@/components/FormScreen';
+import { IssueBanner } from '@/components/IssueBanner';
 import { ItemsEditor } from '@/components/ItemsEditor';
 import { OcrTextViewer } from '@/components/OcrTextViewer';
 import { PageViewer } from '@/components/PageViewer';
 import { TaxLinesEditor } from '@/components/TaxLinesEditor';
 import { formatReceiptDate, fromISODate, toISODate } from '@/lib/dates';
+import { issueMessage, nextQuotaReset } from '@/lib/parse-issue';
 import { currencySymbol, formatMoney } from '@/lib/money';
 import { errorLocation, itemsDifference, type ReceiptFormError } from '@/lib/receipt-form';
 import { firstLowField, type ReviewFieldKey } from '@/lib/receipt-normalize';
 import { flagMessage } from '@/lib/review-flags';
 import { displayMerchant, paymentMethods, type PaymentMethod, type ReceiptSummary } from '@/lib/types';
+import { readAgain } from '@/store/scan';
 import { useReceiptForm } from '@/store/use-receipt-form';
 import { useTheme } from '@/theme';
 
@@ -32,7 +35,6 @@ export default function ReviewScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { t, i18n } = useTranslation();
   const { scheme, colors, space, radius, type } = useTheme();
-  const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const review = useReceiptForm(id);
   const { form, errors, saving, fieldConfidence, setField } = review;
@@ -141,10 +143,30 @@ export default function ReviewScreen() {
     ]);
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <>
       {screen}
-      <ScrollView ref={scroll} keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[12], gap: space[6] }}>
+      <FormScreen
+        scrollRef={scroll}
+        footer={
+          <Button block disabled={saving} onPress={() => void save(true)}>
+            {t('review.save')}
+          </Button>
+        }>
         <PageViewer uris={review.imageUris} height={Math.round(windowHeight * PHOTO_SHARE)} />
+
+        {review.parseIssue && (
+          <IssueBanner
+            title={t(`parseIssue.${issueMessage(review.parseIssue)}.title`)}
+            body={t(`parseIssue.${issueMessage(review.parseIssue)}.body`, { date: formatReceiptDate(nextQuotaReset(new Date()), null, lang) })}
+            action={
+              review.hasOcrText ? (
+                <Button variant="secondary" size="md" onPress={() => void readAgain(id)}>
+                  {t('parseIssue.readAgain')}
+                </Button>
+              ) : undefined
+            }
+          />
+        )}
 
         {(review.status === 'queued' || review.status === 'processing') && (
           <Text style={[type.subhead, { color: colors.inkMuted }]}>{t('review.processing')}</Text>
@@ -226,9 +248,6 @@ export default function ReviewScreen() {
         )}
 
         <View style={{ gap: space[3] }}>
-          <Button block disabled={saving} onPress={() => void save(true)}>
-            {t('review.save')}
-          </Button>
           <Button variant="ghost" size="md" onPress={confirmDelete}>
             {t('review.delete')}
           </Button>
@@ -238,7 +257,7 @@ export default function ReviewScreen() {
             </Button>
           )}
         </View>
-      </ScrollView>
+      </FormScreen>
 
       <CurrencyPicker visible={currencyOpen} value={form.currency} homeCurrency={review.homeCurrency} onSelect={(c) => setField('currency', c)} onClose={() => setCurrencyOpen(false)} />
       {__DEV__ && <OcrTextViewer visible={ocrOpen} text={review.parserText} onClose={() => setOcrOpen(false)} />}
@@ -263,7 +282,7 @@ export default function ReviewScreen() {
           router.back();
         }}
       />
-    </KeyboardAvoidingView>
+    </>
   );
 }
 

@@ -48,6 +48,8 @@ type LogEntry = {
   ocrLineCount?: number | null;
   itemsReturned?: number | null;
   finishReason?: string | null;
+  /** This month's successful parses after this request (or so far, when refused), and the free limit. */
+  quotaUsed?: number | null;
 };
 
 function log(entry: LogEntry) {
@@ -66,6 +68,8 @@ function log(entry: LogEntry) {
       ocrLineCount: entry.ocrLineCount ?? null,
       itemsReturned: entry.itemsReturned ?? null,
       finishReason: entry.finishReason ?? null,
+      quotaUsed: entry.quotaUsed ?? null,
+      quotaLimit: FREE_MONTHLY_PARSES,
       // Per-provider tries (status, error status/message, quota, validation retries) — no receipt text, no keys.
       ...(entry.attempts?.length ? { attempts: entry.attempts } : {}),
       ...(entry.skippedProviders?.length ? { skippedProviders: entry.skippedProviders } : {}),
@@ -112,7 +116,7 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (usageError) return fail('config_error');
   if ((usageRow?.count ?? 0) >= FREE_MONTHLY_PARSES) {
-    log({ userId, outcome: 'quota_exceeded', startedAt });
+    log({ userId, outcome: 'quota_exceeded', quotaUsed: usageRow?.count ?? null, startedAt });
     return fail('quota_exceeded');
   }
 
@@ -131,9 +135,9 @@ Deno.serve(async (req) => {
       countryHint: input.data.countryHint ?? null,
     });
     // Count only successful parses against the quota.
-    await admin.rpc('record_scan', { p_user: userId, p_month: month });
+    const { data: quotaUsed } = await admin.rpc('record_scan', { p_user: userId, p_month: month });
     const answered = attempts[attempts.length - 1];
-    log({ userId, outcome: 'ok', usage, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, startedAt, ...ref });
+    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, startedAt, ...ref });
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {

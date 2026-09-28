@@ -20,6 +20,7 @@ const row: ReceiptRow = {
   documentNumber: null,
   imagePaths: '["a.jpg"]',
   fieldConfidence: null,
+  parseIssue: 'quota_exceeded',
   createdAt: '2026-10-12T15:42:00.000Z',
   updatedAt: '2026-10-12T15:42:00.000Z',
 };
@@ -29,7 +30,7 @@ describe('mappers', () => {
     const receipt = rowToReceipt(row, [{ name: 'Süt', qty: 2, unit: 'pcs', amountMinor: 4250 }], [{ rate: 10, amountMinor: 1927 }]);
     expect(receipt).toMatchObject({ id: 'r1', category: 'groceries', paymentMethod: 'card', imagePaths: ['a.jpg'] });
     expect(receipt.items).toEqual([{ name: 'Süt', qty: 2, unit: 'pcs', amountMinor: 4250 }]);
-    expect([receipt.merchantDisplay, receipt.documentType]).toEqual(['Migros Jet', 'receipt']);
+    expect([receipt.merchantDisplay, receipt.documentType, receipt.parseIssue]).toEqual(['Migros Jet', 'receipt', 'quota_exceeded']);
     expect(receipt.taxes).toEqual([{ rate: 10, amountMinor: 1927 }]);
   });
 
@@ -37,6 +38,7 @@ describe('mappers', () => {
     const summary = rowToSummary({ ...row, category: 'pets', source: 'fax', status: 'weird' });
     expect(summary).toMatchObject({ category: 'other', source: 'manual', status: 'saved' });
     expect(rowToReceipt({ ...row, paymentMethod: 'crypto' }, [], []).paymentMethod).toBeNull();
+    expect(rowToReceipt({ ...row, parseIssue: 'gremlins' }, [], []).parseIssue).toBeNull();
     expect(rowToReceipt({ ...row, documentType: 'coupon' }, [{ name: 'x', qty: 1, unit: 'gallon', amountMinor: 1 }], []).items[0].unit).toBeNull();
   });
 

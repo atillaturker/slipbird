@@ -358,5 +358,20 @@
     "nearBody": "{{spent}} of {{limit}} spent this month.",
     "overTitle": "{{category}}: budget used up",
     "overBody": "{{spent}} spent this month, {{over}} over your budget."
+  },
+  "parseIssue": {
+    "quota": {
+      "title": "This month’s free scans are used up",
+      "body": "Fill this receipt in by hand. Automatic reading starts again on {{date}}."
+    },
+    "unavailable": {
+      "title": "Automatic reading isn’t available right now",
+      "body": "Fill this receipt in by hand, or try again later."
+    },
+    "unreadable": {
+      "title": "Couldn’t read this receipt automatically",
+      "body": "Check each field below, or retake the photo in better light."
+    },
+    "readAgain": "Try reading again"
   }
 }

@@ -41,7 +41,7 @@ export function validateReceiptForm(
   form: ReceiptForm,
   today: string,
   locale: string,
-): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time' | 'fieldConfidence' | 'merchantDisplay' | 'documentType'> } | { ok: false; errors: ReceiptFormErrors } {
+): { ok: true; input: Omit<ReceiptInput, 'source' | 'status' | 'ocrText' | 'ettn' | 'documentNumber' | 'imagePaths' | 'time' | 'fieldConfidence' | 'merchantDisplay' | 'documentType' | 'parseIssue'> } | { ok: false; errors: ReceiptFormErrors } {
   const errors: ReceiptFormErrors = { items: {}, taxes: {} };
   let failed = false;
   const fail = () => {

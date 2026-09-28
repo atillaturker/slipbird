@@ -65,6 +65,7 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
     input.fieldConfidence ? JSON.stringify(input.fieldConfidence) : null,
     input.merchantDisplay,
     input.documentType,
+    input.parseIssue,
   ];
 
   await db.withExclusiveTransactionAsync(async (txn) => {
@@ -72,7 +73,7 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
       await txn.runAsync(
         `UPDATE receipts SET merchant = ?, date = ?, time = ?, totalMinor = ?, currency = ?, category = ?, paymentMethod = ?, note = ?,
            source = ?, status = ?, ocrText = ?, ettn = ?, documentNumber = ?, imagePaths = ?, searchText = ?,
-           merchantNormalized = ?, fieldConfidence = ?, merchantDisplay = ?, documentType = ?, updatedAt = ?
+           merchantNormalized = ?, fieldConfidence = ?, merchantDisplay = ?, documentType = ?, parseIssue = ?, updatedAt = ?
          WHERE id = ?`,
         [...values, now, receiptId],
       );
@@ -81,8 +82,8 @@ export async function saveReceipt(db: SQLiteDatabase, input: ReceiptInput, id?: 
     } else {
       await txn.runAsync(
         `INSERT INTO receipts (merchant, date, time, totalMinor, currency, category, paymentMethod, note,
-           source, status, ocrText, ettn, documentNumber, imagePaths, searchText, merchantNormalized, fieldConfidence, merchantDisplay, documentType, createdAt, updatedAt, id)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+           source, status, ocrText, ettn, documentNumber, imagePaths, searchText, merchantNormalized, fieldConfidence, merchantDisplay, documentType, parseIssue, createdAt, updatedAt, id)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         [...values, now, now, receiptId],
       );
     }

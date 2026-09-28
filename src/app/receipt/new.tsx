@@ -1,14 +1,14 @@
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Alert, View } from 'react-native';
 
 import { Button, Chip, EmptyState, SegmentedControl, TextField } from '@/components';
 import { CurrencyButton } from '@/components/CurrencyButton';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { DateField } from '@/components/DateField';
 import { FieldLabel } from '@/components/FieldLabel';
+import { FormScreen } from '@/components/FormScreen';
 import { ItemsEditor } from '@/components/ItemsEditor';
 import { ReceiptPages } from '@/components/ReceiptPages';
 import { TaxLinesEditor } from '@/components/TaxLinesEditor';
@@ -24,7 +24,6 @@ export default function ManualEntryScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
   const { t, i18n } = useTranslation();
   const { colors, space } = useTheme();
-  const insets = useSafeAreaInsets();
   const receiptForm = useReceiptForm(id);
   const { form, errors, saving, homeCurrency, setField } = receiptForm;
   const [tab, setTab] = useState<Tab>('receipt');
@@ -78,11 +77,14 @@ export default function ManualEntryScreen() {
   };
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: colors.paper }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+    <>
       {screen}
-      <ScrollView
-        keyboardShouldPersistTaps="handled"
-        contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[12], gap: space[6] }}>
+      <FormScreen
+        footer={
+          <Button block disabled={saving} onPress={() => void onSave()}>
+            {t('receiptForm.save')}
+          </Button>
+        }>
         <ReceiptPages uris={receiptForm.imageUris} />
         <SegmentedControl options={Object.values(tabLabels)} value={tabLabels[tab]} onChange={(v) => setTab(v === tabLabels.items ? 'items' : 'receipt')} />
 
@@ -157,14 +159,10 @@ export default function ManualEntryScreen() {
             onRemove={receiptForm.removeItem}
           />
         )}
-
-        <Button block disabled={saving} onPress={() => void onSave()}>
-          {t('receiptForm.save')}
-        </Button>
-      </ScrollView>
+      </FormScreen>
 
       <CurrencyPicker visible={currencyOpen} value={form.currency} homeCurrency={homeCurrency} onSelect={(c) => setField('currency', c)} onClose={() => setCurrencyOpen(false)} />
-    </KeyboardAvoidingView>
+    </>
   );
 }
 

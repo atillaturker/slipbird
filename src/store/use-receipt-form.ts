@@ -107,6 +107,7 @@ export function useReceiptForm(id: string | undefined) {
       imagePaths: existing?.imagePaths ?? [],
       // Saving is the person's confirmation: nothing is left to check.
       fieldConfidence: null,
+      parseIssue: null,
     };
     if (options.checkDuplicates && id) {
       const duplicate = await findDuplicate(getDb(), { id, ettn: input.ettn, merchant: input.merchant, totalMinor: input.totalMinor, date: input.date });
@@ -127,6 +128,9 @@ export function useReceiptForm(id: string | undefined) {
     /** Parser confidence per field, minus the fields the person has since edited. */
     fieldConfidence: withConfirmed(existing?.fieldConfidence ?? null, confirmed),
     status: existing?.status,
+    /** Why automatic reading left this receipt empty, if it did. */
+    parseIssue: existing?.parseIssue ?? null,
+    hasOcrText: !!existing?.ocrText,
     /** Deletes the receipt being reviewed (duplicate → Discard). */
     discard: async () => {
       if (id) await remove(id);

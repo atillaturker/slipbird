@@ -73,6 +73,11 @@ export const migrations: readonly string[] = [
   ALTER TABLE receipts ADD COLUMN documentType TEXT;
   ALTER TABLE receipt_items ADD COLUMN unit TEXT;
   `,
+  // 4 — why automatic reading didn't fill a receipt (quota, backend unavailable, unreadable), so the review
+  // screen can say so instead of showing empty fields.
+  `
+  ALTER TABLE receipts ADD COLUMN parseIssue TEXT;
+  `,
 ];
 
 /** The migrations still to run for a database at `version`, with the version each one sets. */

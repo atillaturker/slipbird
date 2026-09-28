@@ -358,5 +358,20 @@
     "nearBody": "Bu ay {{limit}} bütçenin {{spent}} tutarı harcandı.",
     "overTitle": "{{category}}: bütçe doldu",
     "overBody": "Bu ay {{spent}} harcandı, bütçe {{over}} aşıldı."
+  },
+  "parseIssue": {
+    "quota": {
+      "title": "Bu ayın ücretsiz taramaları bitti",
+      "body": "Bu fişi elle doldurun. Otomatik okuma {{date}} tarihinde yeniden başlar."
+    },
+    "unavailable": {
+      "title": "Otomatik okuma şu anda kullanılamıyor",
+      "body": "Bu fişi elle doldurun ya da daha sonra yeniden deneyin."
+    },
+    "unreadable": {
+      "title": "Bu fiş otomatik olarak okunamadı",
+      "body": "Aşağıdaki alanları kontrol edin ya da fotoğrafı daha iyi ışıkta yeniden çekin."
+    },
+    "readAgain": "Yeniden okumayı dene"
   }
 }

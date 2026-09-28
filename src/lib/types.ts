@@ -16,6 +16,14 @@ export const itemUnits: readonly ItemUnit[] = ['pcs', 'kg', 'l'];
 export type DocumentType = 'receipt' | 'invoice' | 'info_slip' | 'other';
 export const documentTypes: readonly DocumentType[] = ['receipt', 'invoice', 'info_slip', 'other'];
 
+/**
+ * Why automatic reading left a receipt empty (docs/SPEC.md §1.4):
+ * quota_exceeded — the free monthly parses are used; unavailable — the backend can't parse at all (no LLM
+ * quota or key configured); parse_failed — the model's answer was unusable; rejected — the text was refused.
+ */
+export type ParseIssue = 'quota_exceeded' | 'unavailable' | 'parse_failed' | 'rejected';
+export const parseIssues: readonly ParseIssue[] = ['quota_exceeded', 'unavailable', 'parse_failed', 'rejected'];
+
 export type ReceiptItem = {
   name: string;
   qty: number | null;
@@ -50,6 +58,8 @@ export type ReceiptInput = {
   imagePaths: string[];
   /** Per-field confidence from parsing; null for manual entries and once the person has saved. */
   fieldConfidence: FieldConfidence | null;
+  /** Set when automatic reading failed for good; cleared by a successful read or by saving. */
+  parseIssue: ParseIssue | null;
   items: ReceiptItem[];
   taxes: ReceiptTax[];
 };

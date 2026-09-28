@@ -1,7 +1,7 @@
 import { categoryOrder, type Category } from '@/theme';
 
 import type { FieldConfidence } from '@/lib/receipt-normalize';
-import { documentTypes, itemUnits, paymentMethods, type DocumentType, type ItemUnit, type PaymentMethod, type Receipt, type ReceiptItem, type ReceiptSource, type ReceiptStatus, type ReceiptSummary, type ReceiptTax } from '@/lib/types';
+import { documentTypes, itemUnits, parseIssues, paymentMethods, type DocumentType, type ItemUnit, type ParseIssue, type PaymentMethod, type Receipt, type ReceiptItem, type ReceiptSource, type ReceiptStatus, type ReceiptSummary, type ReceiptTax } from '@/lib/types';
 
 /** Row shapes as SQLite returns them. */
 export type ReceiptRow = {
@@ -24,6 +24,7 @@ export type ReceiptRow = {
   documentNumber: string | null;
   imagePaths: string;
   fieldConfidence: string | null;
+  parseIssue: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -48,6 +49,10 @@ function toDocumentType(value: string | null): DocumentType | null {
 
 function toUnit(value: string | null): ItemUnit | null {
   return value && itemUnits.includes(value as ItemUnit) ? (value as ItemUnit) : null;
+}
+
+function toParseIssue(value: string | null): ParseIssue | null {
+  return value && parseIssues.includes(value as ParseIssue) ? (value as ParseIssue) : null;
 }
 
 function toPaymentMethod(value: string | null): PaymentMethod | null {
@@ -96,6 +101,7 @@ export function rowToReceipt(row: ReceiptRow, items: ItemRow[], taxes: TaxRow[])
     ...rowToSummary(row),
     merchantNormalized: row.merchantNormalized,
     paymentMethod: toPaymentMethod(row.paymentMethod),
+    parseIssue: toParseIssue(row.parseIssue),
     note: row.note,
     ocrText: row.ocrText,
     ettn: row.ettn,

@@ -13,6 +13,7 @@ import type { GibQr } from '@/lib/gib-qr';
 import { categoryFromRule } from '@/lib/merchant-rules';
 import { fitForParser, isReadable } from '@/lib/ocr-text';
 import { mergeGibQr, normalizeParsedReceipt } from '@/lib/receipt-normalize';
+import { issueFromFailure } from '@/lib/parse-issue';
 import { unparsedConfidence } from '@/lib/review-flags';
 import { applyGibQr, pendingScan } from '@/lib/scan-draft';
 import type { Receipt, ReceiptInput } from '@/lib/types';
@@ -62,6 +63,17 @@ export async function ingestPages(pages: string[], source: 'scan' | 'import', re
     await save({ ...draft, status: 'failed' }, id);
   }
   return id;
+}
+
+/**
+ * Reads a receipt again from its stored OCR text — after the monthly quota resets, or once the backend is
+ * fixed — without retaking the photo. The receipt goes back to `queued` and through the same queue.
+ */
+export async function readAgain(receiptId: string): Promise<void> {
+  const receipt = await getReceipt(getDb(), receiptId);
+  if (!receipt?.ocrText) return;
+  await useReceipts.getState().save({ ...toInput(receipt), status: 'queued', parseIssue: null }, receiptId);
+  enqueueReceipt(receiptId);
 }
 
 /** A receipt from a QR scanned on its own (no photo, so no OCR): the person adds the merchant. */
@@ -140,7 +152,11 @@ async function parseQueuedReceipt(receiptId: string, attempt: number): Promise<Q
   if (!result.ok) {
     if (isRetryable(result.error)) return result.retryAfterMs ? { retryAfterMs: result.retryAfterMs } : 'retry';
     if (result.error === 'quota_exceeded') noticeQuotaOnce();
-    await save({ ...toInput(current), status: 'needs_review', fieldConfidence: unparsedConfidence(current.fieldConfidence) }, receiptId);
+    // Say why nothing was filled in: the review screen shows it (a silent empty form looks like a bug).
+    await save(
+      { ...toInput(current), status: 'needs_review', fieldConfidence: unparsedConfidence(current.fieldConfidence), parseIssue: issueFromFailure(result.error) },
+      receiptId,
+    );
     return 'done';
   }
 
@@ -159,6 +175,7 @@ async function parseQueuedReceipt(receiptId: string, attempt: number): Promise<Q
       ...fields,
       category: rule.category,
       status: 'needs_review',
+      parseIssue: null,
       fieldConfidence: rule.fromRule ? { ...fieldConfidence, category: { confidence: 'high' } } : fieldConfidence,
     },
     receiptId,

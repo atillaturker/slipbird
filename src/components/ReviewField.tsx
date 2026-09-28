@@ -6,6 +6,7 @@ import { Text, TextInput, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { ICON_SIZE_INLINE, ICON_SIZE_ROW } from './constants';
+import { useFocusScroll } from './FormScreen';
 import { PressableBase } from './internal/PressableBase';
 
 type Props = {
@@ -24,6 +25,7 @@ export function ReviewField({ label, value, figure, confidence = 'high', flag, o
   const { colors, space, size, type } = useTheme();
   // Editing a low field clears its flag: the person has now checked it.
   const [edited, setEdited] = useState(false);
+  const scrollToField = useFocusScroll();
   const low = confidence === 'low' && !edited;
 
   return (
@@ -60,6 +62,7 @@ export function ReviewField({ label, value, figure, confidence = 'high', flag, o
             }}
             keyboardType={figure ? 'decimal-pad' : 'default'}
             selectionColor={colors.stamp}
+            onFocus={scrollToField}
             style={[figure ? type.figureMd : type.body, { flex: 1, color: colors.ink, padding: 0 }]}
           />
         )}

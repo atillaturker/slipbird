@@ -22,6 +22,7 @@ export function pendingScan(source: 'scan' | 'import', today: string, currency: 
     documentNumber: null,
     imagePaths: [],
     fieldConfidence: null,
+    parseIssue: null,
     items: [],
     taxes: [],
   };

@@ -5,6 +5,7 @@ import { Text, TextInput, View } from 'react-native';
 import { useTheme } from '@/theme';
 
 import { ICON_SIZE_INLINE } from './constants';
+import { useFocusScroll } from './FormScreen';
 
 type Props = {
   label: string;
@@ -20,6 +21,7 @@ type Props = {
 export function TextField({ label, value, placeholder, prefix, figure, helper, error, onChangeText }: Props) {
   const { colors, space, radius, size, type } = useTheme();
   const [focused, setFocused] = useState(false);
+  const scrollToField = useFocusScroll();
   const textStyle = figure ? type.figureMd : type.body;
 
   return (
@@ -46,7 +48,10 @@ export function TextField({ label, value, placeholder, prefix, figure, helper, e
           placeholderTextColor={colors.inkMuted}
           onChangeText={onChangeText}
           keyboardType={figure ? 'decimal-pad' : 'default'}
-          onFocus={() => setFocused(true)}
+          onFocus={() => {
+            setFocused(true);
+            scrollToField();
+          }}
           onBlur={() => setFocused(false)}
           selectionColor={colors.stamp}
           style={[textStyle, { flex: 1, color: colors.ink, paddingVertical: space[2] }]}
