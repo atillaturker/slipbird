@@ -26,10 +26,25 @@ export interface ReceiptParser {
  */
 export type ParserErrorCode = 'busy' | 'parse_failed' | 'provider_error' | 'config_error';
 
+/**
+ * What the provider said when a call failed — for logs only. Never contains receipt text or keys.
+ * `quotaValue: "0"` means the key/project has no quota for that model; overloads come as 503/UNAVAILABLE.
+ */
+export type ProviderErrorDetails = {
+  httpStatus: number | null;
+  errorStatus: string | null;
+  message: string | null;
+  quotaId: string | null;
+  quotaMetric: string | null;
+  quotaValue: string | null;
+  retryDelay: string | null;
+};
+
 export class ParserError extends Error {
   constructor(
     readonly code: ParserErrorCode,
     readonly usage: TokenUsage = { inputTokens: null, outputTokens: null },
+    readonly provider: ProviderErrorDetails | null = null,
   ) {
     super(code);
   }

@@ -3,7 +3,7 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 import { adapterFromEnv, createParser } from './providers/index.ts';
-import { ParserError, type TokenUsage } from './providers/types.ts';
+import { ParserError, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
 import { currentMonth, FREE_MONTHLY_PARSES } from './quota.ts';
 import { ParseRequestSchema } from './schema.ts';
 
@@ -27,7 +27,7 @@ function fail(code: ErrorCode): Response {
   return json({ code }, STATUS[code]);
 }
 
-function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage; startedAt: number }) {
+function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage; startedAt: number; provider?: ProviderErrorDetails | null }) {
   console.log(
     JSON.stringify({
       fn: 'parse-receipt',
@@ -37,6 +37,8 @@ function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage
       inputTokens: entry.usage?.inputTokens ?? null,
       outputTokens: entry.usage?.outputTokens ?? null,
       latencyMs: Date.now() - entry.startedAt,
+      // Provider failure details (status, error status/message, quota) — no receipt text, no keys.
+      ...(entry.provider ? { provider: entry.provider } : {}),
     }),
   );
 }
@@ -96,10 +98,10 @@ Deno.serve(async (req) => {
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {
-      log({ userId, outcome: error.code, usage: error.usage, startedAt });
+      log({ userId, outcome: error.code, usage: error.usage, provider: error.provider, startedAt });
       return fail(error.code);
     }
-    log({ userId, outcome: 'provider_error', startedAt });
+    log({ userId, outcome: 'provider_error', startedAt, provider: { httpStatus: null, errorStatus: null, message: error instanceof Error ? error.name : 'unknown', quotaId: null, quotaMetric: null, quotaValue: null, retryDelay: null } });
     return fail('provider_error');
   }
 });
