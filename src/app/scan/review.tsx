@@ -11,6 +11,7 @@ import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { DuplicateSheet } from '@/components/DuplicateSheet';
 import { FieldLabel } from '@/components/FieldLabel';
 import { ItemsEditor } from '@/components/ItemsEditor';
+import { OcrTextViewer } from '@/components/OcrTextViewer';
 import { PageViewer } from '@/components/PageViewer';
 import { TaxLinesEditor } from '@/components/TaxLinesEditor';
 import { formatReceiptDate, fromISODate, toISODate } from '@/lib/dates';
@@ -42,6 +43,7 @@ export default function ReviewScreen() {
   const [categoryOpen, setCategoryOpen] = useState(false);
   const [dateOpen, setDateOpen] = useState(false);
   const [duplicate, setDuplicate] = useState<ReceiptSummary | null>(null);
+  const [ocrOpen, setOcrOpen] = useState(false);
 
   // Scroll to the first low field once, when the receipt has loaded (docs/SPEC.md §1.7).
   const scroll = useRef<ScrollView>(null);
@@ -230,10 +232,16 @@ export default function ReviewScreen() {
           <Button variant="ghost" size="md" onPress={confirmDelete}>
             {t('review.delete')}
           </Button>
+          {__DEV__ && (
+            <Button variant="ghost" size="md" onPress={() => setOcrOpen(true)}>
+              {t('dev.showOcr')}
+            </Button>
+          )}
         </View>
       </ScrollView>
 
       <CurrencyPicker visible={currencyOpen} value={form.currency} homeCurrency={review.homeCurrency} onSelect={(c) => setField('currency', c)} onClose={() => setCurrencyOpen(false)} />
+      {__DEV__ && <OcrTextViewer visible={ocrOpen} text={review.parserText} onClose={() => setOcrOpen(false)} />}
       <CategorySheet visible={categoryOpen} value={form.category} onSelect={(c) => setField('category', c)} onClose={() => setCategoryOpen(false)} />
       <DuplicateSheet
         visible={duplicate !== null}

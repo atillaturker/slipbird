@@ -121,7 +121,19 @@ Deno.test('asks Gemini 3 for minimal thinking and 2.5 for no thinking budget', a
     };
     await geminiAdapter(KEY, 'gemini-3.1-flash-lite').complete({ system: 's', user: 'u', jsonSchema: {} });
     const config = sent.generationConfig as Record<string, unknown>;
-    assertEquals([config.temperature, config.thinkingConfig], [0, { thinkingLevel: 'minimal' }]);
+    assertEquals([config.temperature, config.thinkingConfig, config.maxOutputTokens], [0, { thinkingLevel: 'minimal' }, 16_384]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+Deno.test('finishReason MAX_TOKENS is reported as truncated', async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    globalThis.fetch = () =>
+      Promise.resolve(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{"items":[' }] }, finishReason: 'MAX_TOKENS' }] }), { status: 200 }));
+    const error = await assertRejects(() => geminiAdapter(KEY, 'gemini-x').complete({ system: 's', user: 'u', jsonSchema: {} }), ParserError);
+    assertEquals([error.code, error.finishReason], ['provider_error', 'MAX_TOKENS']);
   } finally {
     globalThis.fetch = originalFetch;
   }

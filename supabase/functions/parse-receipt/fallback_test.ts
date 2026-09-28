@@ -17,7 +17,7 @@ function provider(name: string, behaviour: { fail?: ParserErrorCode; retryAfterS
       if (behaviour.fail) {
         return Promise.reject(new ParserError(behaviour.fail, undefined, { ...NO_DETAILS, httpStatus: 503, retryAfterSeconds: behaviour.retryAfterSeconds ?? null }));
       }
-      return Promise.resolve({ text: behaviour.text ?? ok, usage: { inputTokens: 10, outputTokens: 5 } });
+      return Promise.resolve({ text: behaviour.text ?? ok, usage: { inputTokens: 10, outputTokens: 5 }, finishReason: 'stop' });
     },
   };
   return p satisfies ProviderAdapter;
@@ -86,4 +86,21 @@ Deno.test('PARSER_PROVIDER is an ordered chain; unconfigured providers are skipp
     code = (e as ParserError).code;
   }
   assertEquals(code, 'config_error');
+});
+
+Deno.test('a truncated answer is a provider failure: the next provider answers, no partial items', async () => {
+  const { truncated } = await import('./providers/types.ts');
+  const cut: ProviderAdapter = { name: 'groq', complete: () => Promise.reject(truncated('length', { inputTokens: 900, outputTokens: 16384 })) };
+  const gemini = provider('gemini', {});
+  const result = await createParser([cut, gemini]).parse('t', hints);
+  assertEquals(result.provider, 'gemini');
+  assertEquals(result.attempts[0], {
+    provider: 'groq',
+    outcome: 'provider_error',
+    latencyMs: result.attempts[0].latencyMs,
+    invalidOutputs: 0,
+    finishReason: 'length',
+    outputTokens: 16384,
+    error: { ...NO_DETAILS, errorStatus: 'truncated', message: 'finish reason: length' },
+  });
 });

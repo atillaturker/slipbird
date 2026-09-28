@@ -3,7 +3,7 @@ import type { ParsedReceipt } from '../parsed-receipt';
 import { firstLowField, gibQrConfidence, hasLowField, mergeGibQr, normalizeParsedReceipt } from '../receipt-normalize';
 
 import { earsivDotDecimal } from '../__fixtures__/gib-qr';
-import { cagriParsed, infoSlipParsed } from '../__fixtures__/parsed-receipts';
+import { cagriParsed, infoSlipParsed, longParsed } from '../__fixtures__/parsed-receipts';
 
 const ctx = { today: '2026-10-12', deviceCurrency: 'TRY', locale: 'tr' };
 
@@ -142,15 +142,25 @@ describe('Çağrı fixtures', () => {
   it('normalizes the Çağrı receipt: names, kg line, total matches items', () => {
     const r = normalizeParsedReceipt(cagriParsed, today);
     expect([r.merchant, r.merchantDisplay]).toEqual(['Çağrı Mağazacılık A.Ş.', 'Çağrı Market']);
-    expect(r.totalMinor).toBe(52903);
+    expect(r.totalMinor).toBe(66329);
     expect(r.items.find((i) => i.unit === 'kg')).toEqual({ name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amountMinor: 19268 });
-    expect(r.items.reduce((s, i) => s + i.amountMinor, 0)).toBe(52903);
+    expect(r.items.find((i) => i.amountMinor === 13426)).toEqual({ name: 'MV.PATLICAN KEMER KG', qty: 2.238, unit: 'kg', amountMinor: 13426 });
+    expect(r.items.reduce((s, i) => s + i.amountMinor, 0)).toBe(66329);
     expect(hasLowField(r.fieldConfidence)).toBe(false);
   });
 
   it('flags a missing line with the difference available', () => {
     const r = normalizeParsedReceipt({ ...cagriParsed, items: cagriParsed.items.slice(0, 3) }, today);
     expect(r.fieldConfidence.total?.reason).toBe('itemsMismatch');
+  });
+
+  it('keeps all 34 items of the long receipt, in order, adding up to the total', () => {
+    const r = normalizeParsedReceipt(longParsed, { ...today, today: '2026-10-11' });
+    expect(r.items).toHaveLength(34);
+    expect(r.totalMinor).toBe(301295);
+    expect(r.items.reduce((s, i) => s + i.amountMinor, 0)).toBe(301295);
+    expect(r.items.filter((i) => i.unit === 'kg').map((i) => i.qty)).toEqual([1.452, 0.968, 1.12]);
+    expect(r.fieldConfidence.total).toEqual({ confidence: 'high' });
   });
 
   it('keeps the info slip type', () => {

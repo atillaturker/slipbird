@@ -1,11 +1,14 @@
-import { NO_DETAILS, ParserError, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
+import { NO_DETAILS, ParserError, truncated, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
+
+// Covers reasoning + JSON for ~60 items (gpt-oss counts its reasoning against this limit).
+export const GROQ_MAX_COMPLETION_TOKENS = 16_384;
 
 // Groq: OpenAI-compatible chat completions with strict JSON-schema structured output.
 const ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 const MAX_MESSAGE_LENGTH = 500;
 
 type GroqResponse = {
-  choices?: { message?: { content?: string | null } }[];
+  choices?: { message?: { content?: string | null }; finish_reason?: string }[];
   usage?: { prompt_tokens?: number; completion_tokens?: number };
 };
 
@@ -48,6 +51,7 @@ export function groqAdapter(apiKey: string, model: string): ProviderAdapter {
             temperature: 0,
             // gpt-oss is a reasoning model; extraction needs little of it and every token costs latency.
             reasoning_effort: 'low',
+            max_completion_tokens: GROQ_MAX_COMPLETION_TOKENS,
             messages: [
               { role: 'system', content: system },
               { role: 'user', content: user },
@@ -62,15 +66,15 @@ export function groqAdapter(apiKey: string, model: string): ProviderAdapter {
       if (!response.ok) {
         const details = describeGroqError(response.status, await response.text().catch(() => null), response.headers.get('retry-after'), apiKey);
         // Output that broke the strict schema: treat like invalid JSON so the parser retries once.
-        if (response.status === 400 && details.errorStatus === 'json_validate_failed') return { text: '', usage: { inputTokens: null, outputTokens: null } };
+        if (response.status === 400 && details.errorStatus === 'json_validate_failed') return { text: '', usage: { inputTokens: null, outputTokens: null }, finishReason: null };
         throw new ParserError(classifyGroqFailure(response.status), undefined, details);
       }
 
       const body = (await response.json()) as GroqResponse;
-      return {
-        text: body.choices?.[0]?.message?.content ?? '',
-        usage: { inputTokens: body.usage?.prompt_tokens ?? null, outputTokens: body.usage?.completion_tokens ?? null },
-      };
+      const usage = { inputTokens: body.usage?.prompt_tokens ?? null, outputTokens: body.usage?.completion_tokens ?? null };
+      const finishReason = body.choices?.[0]?.finish_reason ?? null;
+      if (finishReason === 'length') throw truncated(finishReason, usage);
+      return { text: body.choices?.[0]?.message?.content ?? '', usage, finishReason };
     },
   };
 }

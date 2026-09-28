@@ -1,10 +1,13 @@
-import { NO_DETAILS, ParserError, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
+import { NO_DETAILS, ParserError, truncated, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
+
+// Room for ~60 items of JSON with minimal thinking; a long receipt must never be cut off.
+export const GEMINI_MAX_OUTPUT_TOKENS = 16_384;
 
 // Gemini API (ai.google.dev): generateContent with native JSON-schema structured output.
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
 
 type GeminiResponse = {
-  candidates?: { content?: { parts?: { text?: string }[] } }[];
+  candidates?: { content?: { parts?: { text?: string }[] }; finishReason?: string }[];
   usageMetadata?: { promptTokenCount?: number; candidatesTokenCount?: number };
 };
 
@@ -99,6 +102,7 @@ export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
               responseMimeType: 'application/json',
               responseJsonSchema: jsonSchema,
               thinkingConfig: thinkingConfig(model),
+              maxOutputTokens: GEMINI_MAX_OUTPUT_TOKENS,
             },
           }),
         });
@@ -115,13 +119,13 @@ export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
 
       const body = (await response.json()) as GeminiResponse;
       const text = body.candidates?.[0]?.content?.parts?.map((p) => p.text ?? '').join('') ?? '';
-      return {
-        text,
-        usage: {
-          inputTokens: body.usageMetadata?.promptTokenCount ?? null,
-          outputTokens: body.usageMetadata?.candidatesTokenCount ?? null,
-        },
+      const usage = {
+        inputTokens: body.usageMetadata?.promptTokenCount ?? null,
+        outputTokens: body.usageMetadata?.candidatesTokenCount ?? null,
       };
+      const finishReason = body.candidates?.[0]?.finishReason ?? null;
+      if (finishReason === 'MAX_TOKENS') throw truncated(finishReason, usage);
+      return { text, usage, finishReason };
     },
   };
 }

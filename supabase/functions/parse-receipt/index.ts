@@ -44,6 +44,10 @@ type LogEntry = {
   skippedProviders?: string[];
   receiptRef?: string | null;
   attempt?: number | null;
+  /** Non-empty lines in the OCR text we were sent (was an item never read, or dropped by the model?). */
+  ocrLineCount?: number | null;
+  itemsReturned?: number | null;
+  finishReason?: string | null;
 };
 
 function log(entry: LogEntry) {
@@ -59,6 +63,9 @@ function log(entry: LogEntry) {
       receiptRef: entry.receiptRef ?? null,
       attempt: entry.attempt ?? null,
       answeredBy: entry.answeredBy ?? null,
+      ocrLineCount: entry.ocrLineCount ?? null,
+      itemsReturned: entry.itemsReturned ?? null,
+      finishReason: entry.finishReason ?? null,
       // Per-provider tries (status, error status/message, quota, validation retries) — no receipt text, no keys.
       ...(entry.attempts?.length ? { attempts: entry.attempts } : {}),
       ...(entry.skippedProviders?.length ? { skippedProviders: entry.skippedProviders } : {}),
@@ -109,7 +116,11 @@ Deno.serve(async (req) => {
     return fail('quota_exceeded');
   }
 
-  const ref = { receiptRef: input.data.receiptRef ?? null, attempt: input.data.attempt ?? null };
+  const ref = {
+    receiptRef: input.data.receiptRef ?? null,
+    attempt: input.data.attempt ?? null,
+    ocrLineCount: input.data.text.split('\n').filter((line) => line.trim()).length,
+  };
   let skippedProviders: string[] = [];
   try {
     const chain = adaptersFromEnv(Deno.env);
@@ -121,11 +132,12 @@ Deno.serve(async (req) => {
     });
     // Count only successful parses against the quota.
     await admin.rpc('record_scan', { p_user: userId, p_month: month });
-    log({ userId, outcome: 'ok', usage, answeredBy: provider, attempts, skippedProviders, startedAt, ...ref });
+    const answered = attempts[attempts.length - 1];
+    log({ userId, outcome: 'ok', usage, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, startedAt, ...ref });
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {
-      log({ userId, outcome: error.code, usage: error.usage, attempts: error.attempts, skippedProviders, startedAt, ...ref });
+      log({ userId, outcome: error.code, usage: error.usage, finishReason: error.attempts[error.attempts.length - 1]?.finishReason ?? null, attempts: error.attempts, skippedProviders, startedAt, ...ref });
       return fail(error.code, error.code === 'busy' ? (error.provider?.retryAfterSeconds ?? null) : null);
     }
     log({ userId, outcome: 'provider_error', startedAt, skippedProviders, provider: { ...NO_DETAILS, message: error instanceof Error ? error.name : 'unknown' }, ...ref });

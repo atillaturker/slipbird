@@ -22,17 +22,18 @@ Deno.test('sends a strict json_schema request with temperature 0 and the configu
       url = u;
       body = JSON.parse(String(init?.body));
       auth = new Headers(init?.headers).get('authorization') ?? '';
-      return new Response(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' } }], usage: { prompt_tokens: 120, completion_tokens: 80 } }));
+      return new Response(JSON.stringify({ choices: [{ message: { content: '{"ok":true}' }, finish_reason: 'stop' }], usage: { prompt_tokens: 120, completion_tokens: 80 } }));
     },
     async () => {
       const result = await groqAdapter(KEY, 'openai/gpt-oss-120b').complete({ system: 'sys', user: 'usr', jsonSchema: { type: 'object' } });
-      assertEquals(result, { text: '{"ok":true}', usage: { inputTokens: 120, outputTokens: 80 } });
+      assertEquals(result, { text: '{"ok":true}', usage: { inputTokens: 120, outputTokens: 80 }, finishReason: 'stop' });
     },
   );
   assertEquals(url, 'https://api.groq.com/openai/v1/chat/completions');
   assertEquals(auth, `Bearer ${KEY}`);
   assertEquals(body.model, 'openai/gpt-oss-120b');
   assertEquals(body.temperature, 0);
+  assertEquals(body.max_completion_tokens, 16_384);
   assertEquals(body.response_format, { type: 'json_schema', json_schema: { name: 'receipt', strict: true, schema: { type: 'object' } } });
   assertEquals(body.messages, [
     { role: 'system', content: 'sys' },
@@ -69,4 +70,14 @@ Deno.test('redacts the key from error messages', () => {
   const d = describeGroqError(401, JSON.stringify({ error: { message: `Invalid API Key ${KEY}`, code: 'invalid_api_key' } }), null, KEY);
   assertEquals(d.message, 'Invalid API Key [redacted]');
   assertEquals(d.retryAfterSeconds, null);
+});
+
+Deno.test('finish_reason "length" is reported as truncated', async () => {
+  await withFetch(
+    () => new Response(JSON.stringify({ choices: [{ message: { content: '{"items":[' }, finish_reason: 'length' }], usage: { prompt_tokens: 1, completion_tokens: 16384 } })),
+    async () => {
+      const error = await assertRejects(() => groqAdapter(KEY, 'm').complete({ system: 's', user: 'u', jsonSchema: {} }), ParserError);
+      assertEquals([error.code, error.finishReason, error.provider?.errorStatus], ['provider_error', 'length', 'truncated']);
+    },
+  );
 });

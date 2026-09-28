@@ -124,7 +124,12 @@
       "row": "ReceiptRow",
       "card": "ReceiptCard",
       "empty": "EmptyState"
-    }
+    },
+    "showOcr": "Show OCR text",
+    "ocrTitle": "Text sent to the parser",
+    "ocrMeta": "{{lines}} lines · {{chars}} characters",
+    "ocrNone": "No OCR text for this receipt.",
+    "close": "Close"
   },
   "category": {
     "groceries": "Groceries",

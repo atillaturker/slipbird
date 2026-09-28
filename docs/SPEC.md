@@ -28,7 +28,7 @@ Capture ──► image saved locally ──► QR found? ──yes──► Gİ
 - Unit tests with real-shaped fixtures, including decimal commas and missing keys.
 
 ### 1.3 OCR (`src/services/ocr.ts`)
-- `@react-native-ml-kit/text-recognition` on each page; keep block/line order; join pages with a page marker.
+- `@react-native-ml-kit/text-recognition` on each page at full capture resolution (downscaling is for storage only); pages taller than 3:1 are read in overlapping horizontal tiles (~20% overlap, duplicates removed). Printed rows are rebuilt from the line geometry (`src/lib/ocr-lines.ts`: rows by vertical centre, de-skewed, left to right, quantity lines kept above their item) so each item and its price share a line; pages are joined with a page marker. Dev builds show the exact text sent on the review screen ("Show OCR text").
 - If OCR text is under 20 characters: mark the scan `failed` with "Couldn't read this receipt — try again with more light" and offer retake or manual entry.
 
 ### 1.4 Parser backend (`supabase/functions/parse-receipt`)

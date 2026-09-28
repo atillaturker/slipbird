@@ -70,10 +70,14 @@ export function createParser(adapters: ProviderAdapter[], now: () => number = Da
       for (const adapter of adapters) {
         const started = now();
         let invalidOutputs = 0;
+        let finishReason: string | null = null;
+        let outputTokens: number | null = null;
         try {
           for (let attempt = 1; attempt <= ATTEMPTS_PER_PROVIDER; attempt += 1) {
             const result = await adapter.complete({ system: SYSTEM_PROMPT, user, jsonSchema: parsedReceiptJsonSchema });
             usage = addUsage(usage, result.usage);
+            finishReason = result.finishReason;
+            outputTokens = result.usage.outputTokens;
             let json: unknown;
             try {
               json = JSON.parse(result.text);
@@ -83,7 +87,7 @@ export function createParser(adapters: ProviderAdapter[], now: () => number = Da
             }
             const parsed = ParsedReceiptSchema.safeParse(json);
             if (parsed.success) {
-              attempts.push({ provider: adapter.name, outcome: 'ok', latencyMs: now() - started, invalidOutputs, error: null });
+              attempts.push({ provider: adapter.name, outcome: 'ok', latencyMs: now() - started, invalidOutputs, finishReason, outputTokens, error: null });
               return { receipt: parsed.data, usage, provider: adapter.name, attempts };
             }
             invalidOutputs += 1;
@@ -92,7 +96,15 @@ export function createParser(adapters: ProviderAdapter[], now: () => number = Da
         } catch (error) {
           const e = error instanceof ParserError ? error : new ParserError('provider_error');
           usage = addUsage(usage, e.usage);
-          attempts.push({ provider: adapter.name, outcome: e.code, latencyMs: now() - started, invalidOutputs, error: e.provider });
+          attempts.push({
+            provider: adapter.name,
+            outcome: e.code,
+            latencyMs: now() - started,
+            invalidOutputs,
+            finishReason: e.finishReason ?? finishReason,
+            outputTokens: e.usage.outputTokens ?? outputTokens,
+            error: e.provider,
+          });
           if (!FALL_THROUGH.has(e.code)) throw new ParserError(e.code, usage, e.provider, attempts);
         }
       }

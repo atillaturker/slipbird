@@ -8,10 +8,13 @@ export type ParseHints = {
 
 export type TokenUsage = { inputTokens: number | null; outputTokens: number | null };
 
+/** One model answer. `finishReason` as the provider reports it (stop, length, STOP, MAX_TOKENS, …). */
+export type Completion = { text: string; usage: TokenUsage; finishReason: string | null };
+
 /** What every provider adapter implements: one JSON-constrained completion. Failures throw ParserError. */
 export interface ProviderAdapter {
   readonly name: string;
-  complete(request: { system: string; user: string; jsonSchema: Record<string, unknown> }): Promise<{ text: string; usage: TokenUsage }>;
+  complete(request: { system: string; user: string; jsonSchema: Record<string, unknown> }): Promise<Completion>;
 }
 
 /** One provider's try within a request, for logs. */
@@ -21,6 +24,9 @@ export type ProviderAttempt = {
   latencyMs: number;
   /** Model outputs that failed JSON/schema validation (each triggers one more model call). */
   invalidOutputs: number;
+  /** Finish reason of this provider's last answer; `length`/`MAX_TOKENS` means the output was cut off. */
+  finishReason: string | null;
+  outputTokens: number | null;
   error: ProviderErrorDetails | null;
 };
 
@@ -64,12 +70,18 @@ export const NO_DETAILS: ProviderErrorDetails = {
   retryAfterSeconds: null,
 };
 
+/** A cut-off answer would give partial items: treat it as a provider failure (try the next provider). */
+export function truncated(finishReason: string | null, usage: TokenUsage): ParserError {
+  return new ParserError('provider_error', usage, { ...NO_DETAILS, errorStatus: 'truncated', message: `finish reason: ${finishReason}` }, [], finishReason);
+}
+
 export class ParserError extends Error {
   constructor(
     readonly code: ParserErrorCode,
     readonly usage: TokenUsage = { inputTokens: null, outputTokens: null },
     readonly provider: ProviderErrorDetails | null = null,
     readonly attempts: ProviderAttempt[] = [],
+    readonly finishReason: string | null = null,
   ) {
     super(code);
   }

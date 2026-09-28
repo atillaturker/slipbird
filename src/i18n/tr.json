@@ -124,7 +124,12 @@
       "row": "ReceiptRow",
       "card": "ReceiptCard",
       "empty": "EmptyState"
-    }
+    },
+    "showOcr": "OCR metnini göster",
+    "ocrTitle": "Ayrıştırıcıya gönderilen metin",
+    "ocrMeta": "{{lines}} satır · {{chars}} karakter",
+    "ocrNone": "Bu fiş için OCR metni yok.",
+    "close": "Kapat"
   },
   "category": {
     "groceries": "Market",

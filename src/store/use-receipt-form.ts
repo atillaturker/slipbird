@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { getDb } from '@/db';
 import { findDuplicate } from '@/db/receipts';
 import { toISODate } from '@/lib/dates';
+import { fitForParser } from '@/lib/ocr-text';
 import type { FieldConfidence, ReviewFieldKey } from '@/lib/receipt-normalize';
 import { emptyReceiptForm, receiptToForm, validateReceiptForm, type ReceiptForm, type ReceiptFormErrors } from '@/lib/receipt-form';
 import type { ReceiptInput, ReceiptSummary } from '@/lib/types';
@@ -130,6 +131,8 @@ export function useReceiptForm(id: string | undefined) {
     discard: async () => {
       if (id) await remove(id);
     },
+    /** Exactly the text the queue sends to parse-receipt for this receipt (dev diagnostics). */
+    parserText: existing?.ocrText ? fitForParser(existing.ocrText) : null,
     /** Photos of the receipt being edited, as URIs the Image component can show. */
     imageUris: (existing?.imagePaths ?? []).map(imageUri),
     errors,
