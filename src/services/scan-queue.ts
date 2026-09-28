@@ -2,13 +2,21 @@ import { addNetworkStateListener } from 'expo-network';
 import Storage from 'expo-sqlite/kv-store';
 import { AppState } from 'react-native';
 
-import { dequeue, dueItems, enqueue, parseQueue, reschedule, type QueueItem } from '@/lib/retry';
+import { dequeue, dueItems, enqueue, parseQueue, postpone, reschedule, type QueueItem } from '@/lib/retry';
+
+import { forgetParse } from './parse-lease';
 
 const QUEUE_KEY = 'scanQueue';
 
-/** What processing one queued receipt ended in; `retryAfterMs` when the provider said when to retry. */
-export type QueueOutcome = 'done' | 'retry' | { retryAfterMs: number };
-type Handler = (receiptId: string) => Promise<QueueOutcome>;
+/**
+ * What processing one queued receipt ended in. `retryAfterMs` when the provider said when to retry;
+ * `in_flight` when another worker is parsing it right now (look again shortly, not a failure).
+ */
+export type QueueOutcome = 'done' | 'retry' | 'in_flight' | { retryAfterMs: number };
+/** `attempt` is 1 for the first try, 2 for the first retry, … */
+type Handler = (receiptId: string, attempt: number) => Promise<QueueOutcome>;
+
+const IN_FLIGHT_RECHECK_MS = 5_000;
 
 let handler: Handler | null = null;
 let running = false;
@@ -43,11 +51,12 @@ export async function processQueue(force = false): Promise<void> {
     for (const item of dueItems(read(), Date.now(), force)) {
       let outcome: QueueOutcome;
       try {
-        outcome = await handler(item.receiptId);
+        outcome = await handler(item.receiptId, item.attempts + 1);
       } catch {
         outcome = 'retry';
       }
       if (outcome === 'done') write(dequeue(read(), item.receiptId));
+      else if (outcome === 'in_flight') write(postpone(read(), item.receiptId, Date.now(), IN_FLIGHT_RECHECK_MS));
       else write(reschedule(read(), item.receiptId, Date.now(), outcome === 'retry' ? undefined : outcome.retryAfterMs));
     }
   } finally {
@@ -60,14 +69,16 @@ export async function processQueue(force = false): Promise<void> {
   }
 }
 
-/** Persists a receipt for parsing and tries right away. */
+/** Persists a receipt for parsing and tries right away. New pages: whatever was parsed before no longer counts. */
 export function enqueueReceipt(receiptId: string): void {
+  forgetParse(receiptId);
   write(enqueue(read(), receiptId, Date.now()));
   void processQueue();
 }
 
 export function removeFromQueue(receiptId: string): void {
   write(dequeue(read(), receiptId));
+  forgetParse(receiptId);
 }
 
 /** Starts processing: now, when the app comes to the foreground, and when the network returns. */

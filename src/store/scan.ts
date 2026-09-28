@@ -20,6 +20,7 @@ import { findGibQr, importPhotos, scanDocument, type Capture } from '@/services/
 import { saveReceiptImages } from '@/services/images';
 import { recognizePages } from '@/services/ocr';
 import { isRetryable, parseReceiptText } from '@/services/parser-client';
+import { claimParse, releaseParse } from '@/services/parse-lease';
 import { enqueueReceipt, type QueueOutcome } from '@/services/scan-queue';
 
 import { useReceipts } from './receipts';
@@ -97,8 +98,25 @@ function noticeQuotaOnce() {
   Alert.alert(i18n.t('quota.title'), i18n.t('quota.body'));
 }
 
-/** Parses one queued receipt. `retry` keeps it queued with backoff (offline, provider busy). */
-export async function processQueuedReceipt(receiptId: string): Promise<QueueOutcome> {
+/**
+ * Parses one queued receipt, at most once at a time and never again once parsed: a receipt already being
+ * parsed (by any worker) is `in_flight`, one already parsed is `done` without calling the parser.
+ */
+export async function processQueuedReceipt(receiptId: string, attempt = 1): Promise<QueueOutcome> {
+  const claim = claimParse(receiptId);
+  if (!claim.ok) return claim.reason === 'done' ? 'done' : 'in_flight';
+  let outcome: QueueOutcome = 'retry';
+  try {
+    outcome = await parseQueuedReceipt(receiptId, attempt);
+    return outcome;
+  } finally {
+    // 'done' = parsed, or settled for manual entry: never send it again. Anything else frees it for the retry.
+    releaseParse(receiptId, outcome === 'done');
+  }
+}
+
+/** One parse attempt. `retry` keeps it queued with backoff (offline, provider busy). */
+async function parseQueuedReceipt(receiptId: string, attempt: number): Promise<QueueOutcome> {
   const db = getDb();
   const receipt = await getReceipt(db, receiptId);
   // Deleted, or already filled in by the person while it waited.
@@ -110,6 +128,8 @@ export async function processQueuedReceipt(receiptId: string): Promise<QueueOutc
     locale: locale?.languageTag ?? i18n.language,
     deviceCurrency: useSettings.getState().homeCurrency,
     countryHint: locale?.regionCode ?? null,
+    receiptRef: receiptId,
+    attempt,
   });
 
   const { save } = useReceipts.getState();

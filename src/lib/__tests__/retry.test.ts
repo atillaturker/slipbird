@@ -1,11 +1,8 @@
-import { dequeue, dueItems, enqueue, parseQueue, reschedule, retryDelayMs } from '../retry';
+import { dequeue, dueItems, enqueue, parseQueue, postpone, reschedule, retryDelayMs } from '../retry';
 
 describe('retryDelayMs', () => {
-  it('doubles from 30 s and caps at 1 h', () => {
-    expect(retryDelayMs(1)).toBe(30_000);
-    expect(retryDelayMs(2)).toBe(60_000);
-    expect(retryDelayMs(3)).toBe(120_000);
-    expect(retryDelayMs(20)).toBe(3_600_000);
+  it('backs off 5 s, 15 s, 30 s, 60 s, then every 5 min', () => {
+    expect([1, 2, 3, 4, 5, 6, 50].map(retryDelayMs)).toEqual([5_000, 15_000, 30_000, 60_000, 300_000, 300_000, 300_000]);
   });
 });
 
@@ -14,19 +11,26 @@ describe('queue', () => {
     let q = enqueue([], 'a', 1000);
     q = enqueue(q, 'a', 2000);
     expect(q).toEqual([{ receiptId: 'a', attempts: 0, nextAttemptAt: 1000 }]);
-    q = reschedule(q, 'a', 5000);
-    expect(q).toEqual([{ receiptId: 'a', attempts: 1, nextAttemptAt: 35_000 }]);
-    expect(dueItems(q, 10_000)).toEqual([]);
-    expect(dueItems(q, 10_000, true)).toHaveLength(1);
-    expect(dueItems(q, 35_000)).toHaveLength(1);
+    q = reschedule(q, 'a', 10_000);
+    expect(q).toEqual([{ receiptId: 'a', attempts: 1, nextAttemptAt: 15_000 }]);
+    q = reschedule(q, 'a', 15_000);
+    expect(q[0]).toEqual({ receiptId: 'a', attempts: 2, nextAttemptAt: 30_000 });
+    expect(dueItems(q, 20_000)).toEqual([]);
+    expect(dueItems(q, 20_000, true)).toHaveLength(1);
+    expect(dueItems(q, 30_000)).toHaveLength(1);
     expect(dequeue(q, 'a')).toEqual([]);
   });
 
-  it("honours the provider's retry delay, within 1 s…1 h", () => {
+  it("waits for the provider's hint when it is longer than the backoff, within 1 h", () => {
     const q = enqueue([], 'a', 0);
     expect(reschedule(q, 'a', 1000, 22_000)[0]).toEqual({ receiptId: 'a', attempts: 1, nextAttemptAt: 23_000 });
-    expect(reschedule(q, 'a', 1000, 10)[0].nextAttemptAt).toBe(2000);
+    expect(reschedule(q, 'a', 1000, 2_000)[0].nextAttemptAt).toBe(6_000); // backoff (5 s) is longer
     expect(reschedule(q, 'a', 0, 5 * 3_600_000)[0].nextAttemptAt).toBe(3_600_000);
+  });
+
+  it('postpones without counting a failure', () => {
+    const q = postpone(enqueue([], 'a', 0), 'a', 1000, 5000);
+    expect(q[0]).toEqual({ receiptId: 'a', attempts: 0, nextAttemptAt: 6000 });
   });
 
   it('survives corrupt storage', () => {

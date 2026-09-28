@@ -25,15 +25,16 @@ const hints = { locale: 'tr-TR', deviceCurrency: 'TRY', countryHint: 'TR' };
 
 Deno.test('returns a valid receipt on the first try', async () => {
   const adapter = fakeAdapter([JSON.stringify(valid)]);
-  const { receipt, usage } = await createParser(adapter).parse('text', hints);
+  const { receipt, usage, provider } = await createParser([adapter]).parse('text', hints);
   assertEquals(receipt.total.value, '529,03');
+  assertEquals(provider, 'fake');
   assertEquals(adapter.calls, 1);
   assertEquals(usage, { inputTokens: 100, outputTokens: 50 });
 });
 
 Deno.test('retries once on invalid JSON', async () => {
   const adapter = fakeAdapter(['{not json', JSON.stringify(valid)]);
-  const { receipt, usage } = await createParser(adapter).parse('text', hints);
+  const { receipt, usage } = await createParser([adapter]).parse('text', hints);
   assertEquals(receipt.merchant.value, 'Çağrı Mağazacılık A.Ş.');
   assertEquals(adapter.calls, 2);
   assertEquals(usage, { inputTokens: 200, outputTokens: 100 });
@@ -41,14 +42,14 @@ Deno.test('retries once on invalid JSON', async () => {
 
 Deno.test('fails with parse_failed after two bad outputs', async () => {
   const adapter = fakeAdapter([JSON.stringify({ ...valid, category: { value: 'pets', confidence: 'high' } })]);
-  const error = await assertRejects(() => createParser(adapter).parse('text', hints), ParserError);
+  const error = await assertRejects(() => createParser([adapter]).parse('text', hints), ParserError);
   assertEquals(error.code, 'parse_failed');
   assertEquals(adapter.calls, 2);
 });
 
 Deno.test('passes provider errors through (busy stays busy)', async () => {
   const adapter: ProviderAdapter = { name: 'fake', complete: () => Promise.reject(new ParserError('busy')) };
-  const error = await assertRejects(() => createParser(adapter).parse('text', hints), ParserError);
+  const error = await assertRejects(() => createParser([adapter]).parse('text', hints), ParserError);
   assertEquals(error.code, 'busy');
 });
 

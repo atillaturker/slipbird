@@ -33,6 +33,7 @@ Deno.test('describes a quota error with limit 0', () => {
     quotaMetric: 'generativelanguage.googleapis.com/generate_content_free_tier_requests',
     quotaValue: '0',
     retryDelay: '34s',
+    retryAfterSeconds: 34,
   });
 });
 
@@ -104,4 +105,24 @@ Deno.test('limit 0 is a configuration problem, other 429s and 503s are busy', as
   assertEquals(classifyGeminiFailure(describeGeminiError(400, '{}', KEY)), 'provider_error');
   assertEquals(retryDelaySeconds(null), null);
   assertEquals(retryDelaySeconds('soon'), null);
+});
+
+Deno.test('asks Gemini 3 for minimal thinking and 2.5 for no thinking budget', async () => {
+  const { thinkingConfig } = await import('./providers/gemini.ts');
+  assertEquals(thinkingConfig('gemini-3.1-flash-lite'), { thinkingLevel: 'minimal' });
+  assertEquals(thinkingConfig('gemini-2.5-flash-lite'), { thinkingBudget: 0 });
+
+  const originalFetch = globalThis.fetch;
+  let sent: Record<string, unknown> = {};
+  try {
+    globalThis.fetch = (_url, init) => {
+      sent = JSON.parse(String(init?.body));
+      return Promise.resolve(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: '{}' }] } }] }), { status: 200 }));
+    };
+    await geminiAdapter(KEY, 'gemini-3.1-flash-lite').complete({ system: 's', user: 'u', jsonSchema: {} });
+    const config = sent.generationConfig as Record<string, unknown>;
+    assertEquals([config.temperature, config.thinkingConfig], [0, { thinkingLevel: 'minimal' }]);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });

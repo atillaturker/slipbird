@@ -19,8 +19,9 @@ Checks: `npx tsc --noEmit`, `npx expo lint`, `npx jest`.
 
 ## Backend (Supabase)
 
-One Edge Function, `parse-receipt`, plus a quota table. The LLM provider is chosen with `PARSER_PROVIDER`
-(Gemini today) and `PARSER_MODEL`; the provider key lives only in function secrets.
+One Edge Function, `parse-receipt`, plus a quota table. `PARSER_PROVIDER` is an ordered fallback chain
+(e.g. `groq,gemini`): within one request, a busy or failing provider hands over to the next. Each provider has
+its own model and key (`GROQ_MODEL`/`GROQ_API_KEY`, `GEMINI_MODEL`/`GEMINI_API_KEY`), in function secrets only.
 
 ### Local
 
@@ -29,8 +30,8 @@ Requires Docker Desktop running. The Supabase CLI runs through `npx`.
 ```bash
 npx supabase start                                   # prints the API URL and anon key
 cp supabase/functions/.env.example supabase/functions/.env
-# set GEMINI_API_KEY (https://aistudio.google.com/apikey) and PARSER_MODEL — the current
-# Flash-Lite id from https://ai.google.dev/gemini-api/docs/models
+# set GROQ_API_KEY (https://console.groq.com/keys) and GEMINI_API_KEY + GEMINI_MODEL (current Flash-Lite id
+# from https://ai.google.dev/gemini-api/docs/models)
 npx supabase functions serve parse-receipt --env-file supabase/functions/.env
 ```
 
@@ -49,7 +50,8 @@ cd supabase/functions/parse-receipt && npx deno test --allow-env --config deno.j
 npx supabase login
 npx supabase link --project-ref <ref>
 npx supabase db push
-npx supabase secrets set PARSER_PROVIDER=gemini PARSER_MODEL=<model id> GEMINI_API_KEY=<key>
+npx supabase secrets set PARSER_PROVIDER=groq,gemini GROQ_MODEL=openai/gpt-oss-120b GROQ_API_KEY=<key> \
+  GEMINI_MODEL=<model id> GEMINI_API_KEY=<key>
 npx supabase functions deploy parse-receipt
 ```
 

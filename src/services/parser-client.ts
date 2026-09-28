@@ -16,7 +16,15 @@ export type ParseResult =
   /** `retryAfterMs`: the provider said when to try again (busy only). */
   | { ok: false; error: ParseFailure; retryAfterMs?: number };
 
-export type ParseInput = { text: string; locale: string; deviceCurrency: string; countryHint: string | null };
+export type ParseInput = {
+  text: string;
+  locale: string;
+  deviceCurrency: string;
+  countryHint: string | null;
+  /** Local receipt id and queue attempt, so server logs can tell app retries from duplicates. */
+  receiptRef: string;
+  attempt: number;
+};
 
 const RETRYABLE: readonly ParseFailure[] = ['offline', 'busy', 'retryable'];
 

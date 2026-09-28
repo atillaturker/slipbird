@@ -69,6 +69,9 @@ export const ParseRequestSchema = z.object({
   locale: z.string().min(2).max(35),
   deviceCurrency: z.string().regex(/^[A-Z]{3}$/),
   countryHint: z.string().length(2).nullable().optional(),
+  /** Opaque local receipt id + the app's attempt number: lets logs tell client duplicates from provider retries. */
+  receiptRef: z.string().max(64).optional(),
+  attempt: z.number().int().min(1).max(1000).optional(),
 });
 
 export type ParseRequest = z.infer<typeof ParseRequestSchema>;

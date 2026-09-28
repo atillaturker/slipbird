@@ -34,7 +34,7 @@ Capture ──► image saved locally ──► QR found? ──yes──► Gİ
 ### 1.4 Parser backend (`supabase/functions/parse-receipt`)
 - Auth: Supabase anonymous sign-in on first launch; the function requires the user JWT.
 - Input: `{ text, locale, deviceCurrency, countryHint }`. Max 12k characters.
-- Calls an LLM (model name in env `PARSER_MODEL`, a small fast model; API key in function secrets) with the system prompt in `prompt.ts` and a strict JSON schema in `schema.ts`. Temperature 0.
+- Calls an LLM with the system prompt in `prompt.ts` and a strict JSON schema in `schema.ts`, temperature 0, reasoning/thinking kept minimal. `PARSER_PROVIDER` is an ordered fallback chain (e.g. `groq,gemini`); each provider has its own model and key in function secrets (`GROQ_MODEL`/`GROQ_API_KEY`, `GEMINI_MODEL`/`GEMINI_API_KEY`). Within one request, a busy (429/503) or failing provider hands over to the next; the response is `busy` only when all are busy. Logs record which provider answered.
 - Output schema:
   ```json
   {
@@ -51,7 +51,7 @@ Capture ──► image saved locally ──► QR found? ──yes──► Gİ
   }
   ```
 - The prompt must: return amounts exactly as printed (the app parses them), prefer the line labelled TOTAL / TOPLAM / GENEL TOPLAM / ÖDENECEK, mark `low` when unsure or when items don't sum to the total within 1%, never invent a merchant. It fixes obvious OCR errors in the merchant name (legal name in `merchant`, short brand in `merchantDisplay`) and garbled Turkish letters in item names, but never changes amounts. Weighed lines ("0,876 KG X 219,95") give `qty` 0.876 and `unit` kg. "BİLGİ FİŞİ" / "MALİ DEĞERİ YOKTUR" slips are `info_slip`.
-- Provider errors: a 429 with quota limit 0 is `config_error` (the app stops retrying and asks for manual entry); other 429s/503s are `busy` with `retryAfterSeconds` from the provider's RetryInfo, which the app's queue honours.
+- Provider errors: a 429 with quota limit 0 is `config_error` (the app stops retrying and asks for manual entry); other 429s/503s are `busy` with `retryAfterSeconds` from the provider's RetryInfo / Retry-After, which the app's queue honours. Queue backoff when busy: 5 s, 15 s, 30 s, 60 s, then every 5 min. Parsing is idempotent per receipt on the device: a receipt already being parsed, or already parsed, is not sent again.
 - Stateless: do not log or store receipt text. Log only user id, timestamp, token counts, latency.
 - Quota: table `scan_usage(user_id, month, count)`; free users get 15 parses per calendar month (constant in one place). Over quota → 402 with `{ code: "quota_exceeded" }`; the app shows the paywall (M7) and still allows manual entry.
 - Errors return `{ code }`; the app maps codes to translated messages.

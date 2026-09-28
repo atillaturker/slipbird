@@ -1,4 +1,4 @@
-import { ParserError, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
+import { NO_DETAILS, ParserError, type ProviderAdapter, type ProviderErrorDetails } from './types.ts';
 
 // Gemini API (ai.google.dev): generateContent with native JSON-schema structured output.
 const ENDPOINT = 'https://generativelanguage.googleapis.com/v1beta/models';
@@ -40,6 +40,7 @@ export function describeGeminiError(httpStatus: number | null, bodyText: string 
   const retry = details.find((d) => d['@type']?.endsWith('google.rpc.RetryInfo'));
   const redact = (s: string) => (apiKey ? s.split(apiKey).join('[redacted]') : s);
   const message = body.error?.message ? redact(body.error.message).slice(0, MAX_MESSAGE_LENGTH) : null;
+  const retryDelay = retry?.retryDelay ?? null;
   return {
     httpStatus,
     errorStatus: body.error?.status ?? null,
@@ -47,7 +48,8 @@ export function describeGeminiError(httpStatus: number | null, bodyText: string 
     quotaId: violation?.quotaId ?? null,
     quotaMetric: violation?.quotaMetric ?? null,
     quotaValue: violation?.quotaValue ?? null,
-    retryDelay: retry?.retryDelay ?? null,
+    retryDelay,
+    retryAfterSeconds: retryDelaySeconds(retryDelay),
   };
 }
 
@@ -72,6 +74,14 @@ export function classifyGeminiFailure(details: ProviderErrorDetails): 'config_er
   return 'provider_error';
 }
 
+/**
+ * Keep thinking as low as the model allows — extraction doesn't need it and it costs seconds.
+ * Gemini 3 takes thinkingLevel (minimal|low|medium|high); 2.5 takes thinkingBudget. Never both (400).
+ */
+export function thinkingConfig(model: string): Record<string, unknown> {
+  return /gemini-2\.5/.test(model) ? { thinkingBudget: 0 } : { thinkingLevel: 'minimal' };
+}
+
 export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
   return {
     name: 'gemini',
@@ -88,13 +98,13 @@ export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
               temperature: 0,
               responseMimeType: 'application/json',
               responseJsonSchema: jsonSchema,
+              thinkingConfig: thinkingConfig(model),
             },
           }),
         });
       } catch (error) {
         // Network failure: no response to describe. Log the error kind only.
-        const details = describeGeminiError(null, null, apiKey);
-        throw new ParserError('provider_error', undefined, { ...details, message: error instanceof Error ? error.name : 'fetch_failed' });
+        throw new ParserError('provider_error', undefined, { ...NO_DETAILS, message: error instanceof Error ? error.name : 'fetch_failed' });
       }
 
       if (!response.ok) {

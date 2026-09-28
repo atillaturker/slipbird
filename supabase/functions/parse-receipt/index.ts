@@ -2,9 +2,8 @@
 // Stateless: receipt text is never logged or stored. Logs carry only user id, time, tokens, latency.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
-import { retryDelaySeconds } from './providers/gemini.ts';
-import { adapterFromEnv, createParser } from './providers/index.ts';
-import { ParserError, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
+import { adaptersFromEnv, createParser } from './providers/index.ts';
+import { NO_DETAILS, ParserError, type ProviderAttempt, type ProviderErrorDetails, type TokenUsage } from './providers/types.ts';
 import { currentMonth, FREE_MONTHLY_PARSES } from './quota.ts';
 import { ParseRequestSchema } from './schema.ts';
 
@@ -33,7 +32,21 @@ function fail(code: ErrorCode, retryAfterSeconds: number | null = null): Respons
   });
 }
 
-function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage; startedAt: number; provider?: ProviderErrorDetails | null }) {
+type LogEntry = {
+  userId: string | null;
+  outcome: string;
+  usage?: TokenUsage;
+  startedAt: number;
+  provider?: ProviderErrorDetails | null;
+  /** Which provider produced the answer. */
+  answeredBy?: string | null;
+  attempts?: ProviderAttempt[];
+  skippedProviders?: string[];
+  receiptRef?: string | null;
+  attempt?: number | null;
+};
+
+function log(entry: LogEntry) {
   console.log(
     JSON.stringify({
       fn: 'parse-receipt',
@@ -43,7 +56,12 @@ function log(entry: { userId: string | null; outcome: string; usage?: TokenUsage
       inputTokens: entry.usage?.inputTokens ?? null,
       outputTokens: entry.usage?.outputTokens ?? null,
       latencyMs: Date.now() - entry.startedAt,
-      // Provider failure details (status, error status/message, quota) — no receipt text, no keys.
+      receiptRef: entry.receiptRef ?? null,
+      attempt: entry.attempt ?? null,
+      answeredBy: entry.answeredBy ?? null,
+      // Per-provider tries (status, error status/message, quota, validation retries) — no receipt text, no keys.
+      ...(entry.attempts?.length ? { attempts: entry.attempts } : {}),
+      ...(entry.skippedProviders?.length ? { skippedProviders: entry.skippedProviders } : {}),
       ...(entry.provider ? { provider: entry.provider } : {}),
     }),
   );
@@ -91,23 +109,26 @@ Deno.serve(async (req) => {
     return fail('quota_exceeded');
   }
 
+  const ref = { receiptRef: input.data.receiptRef ?? null, attempt: input.data.attempt ?? null };
+  let skippedProviders: string[] = [];
   try {
-    const parser = createParser(adapterFromEnv(Deno.env));
-    const { receipt, usage } = await parser.parse(input.data.text, {
+    const chain = adaptersFromEnv(Deno.env);
+    skippedProviders = chain.skipped;
+    const { receipt, usage, provider, attempts } = await createParser(chain.adapters).parse(input.data.text, {
       locale: input.data.locale,
       deviceCurrency: input.data.deviceCurrency,
       countryHint: input.data.countryHint ?? null,
     });
     // Count only successful parses against the quota.
     await admin.rpc('record_scan', { p_user: userId, p_month: month });
-    log({ userId, outcome: 'ok', usage, startedAt });
+    log({ userId, outcome: 'ok', usage, answeredBy: provider, attempts, skippedProviders, startedAt, ...ref });
     return json(receipt);
   } catch (error) {
     if (error instanceof ParserError) {
-      log({ userId, outcome: error.code, usage: error.usage, provider: error.provider, startedAt });
-      return fail(error.code, error.code === 'busy' ? retryDelaySeconds(error.provider?.retryDelay ?? null) : null);
+      log({ userId, outcome: error.code, usage: error.usage, attempts: error.attempts, skippedProviders, startedAt, ...ref });
+      return fail(error.code, error.code === 'busy' ? (error.provider?.retryAfterSeconds ?? null) : null);
     }
-    log({ userId, outcome: 'provider_error', startedAt, provider: { httpStatus: null, errorStatus: null, message: error instanceof Error ? error.name : 'unknown', quotaId: null, quotaMetric: null, quotaValue: null, retryDelay: null } });
+    log({ userId, outcome: 'provider_error', startedAt, skippedProviders, provider: { ...NO_DETAILS, message: error instanceof Error ? error.name : 'unknown' }, ...ref });
     return fail('provider_error');
   }
 });

@@ -8,21 +8,32 @@ export type ParseHints = {
 
 export type TokenUsage = { inputTokens: number | null; outputTokens: number | null };
 
-/** What every provider adapter implements: one JSON-constrained completion. */
+/** What every provider adapter implements: one JSON-constrained completion. Failures throw ParserError. */
 export interface ProviderAdapter {
   readonly name: string;
   complete(request: { system: string; user: string; jsonSchema: Record<string, unknown> }): Promise<{ text: string; usage: TokenUsage }>;
 }
 
-/** The single interface the handler uses, whatever the provider. */
+/** One provider's try within a request, for logs. */
+export type ProviderAttempt = {
+  provider: string;
+  outcome: 'ok' | ParserErrorCode;
+  latencyMs: number;
+  /** Model outputs that failed JSON/schema validation (each triggers one more model call). */
+  invalidOutputs: number;
+  error: ProviderErrorDetails | null;
+};
+
+/** The single interface the handler uses, whatever the providers. */
 export interface ReceiptParser {
-  parse(text: string, hints: ParseHints): Promise<{ receipt: ParsedReceipt; usage: TokenUsage }>;
+  parse(text: string, hints: ParseHints): Promise<{ receipt: ParsedReceipt; usage: TokenUsage; provider: string; attempts: ProviderAttempt[] }>;
 }
 
 /**
- * busy — provider rate limit (429) or overload: the app keeps the receipt queued and retries.
+ * busy — rate limit (429) or overload (503): try the next provider; the app retries later if all are busy.
  * parse_failed — the model's output was not valid JSON for the schema, twice.
- * provider_error — anything else from the provider.
+ * provider_error — anything else from the provider (bad request, 5xx, network).
+ * config_error — the provider can't work as configured (missing key/model, quota limit 0).
  */
 export type ParserErrorCode = 'busy' | 'parse_failed' | 'provider_error' | 'config_error';
 
@@ -38,6 +49,19 @@ export type ProviderErrorDetails = {
   quotaMetric: string | null;
   quotaValue: string | null;
   retryDelay: string | null;
+  /** When the provider asked us to retry (RetryInfo / Retry-After), in seconds. */
+  retryAfterSeconds: number | null;
+};
+
+export const NO_DETAILS: ProviderErrorDetails = {
+  httpStatus: null,
+  errorStatus: null,
+  message: null,
+  quotaId: null,
+  quotaMetric: null,
+  quotaValue: null,
+  retryDelay: null,
+  retryAfterSeconds: null,
 };
 
 export class ParserError extends Error {
@@ -45,6 +69,7 @@ export class ParserError extends Error {
     readonly code: ParserErrorCode,
     readonly usage: TokenUsage = { inputTokens: null, outputTokens: null },
     readonly provider: ProviderErrorDetails | null = null,
+    readonly attempts: ProviderAttempt[] = [],
   ) {
     super(code);
   }
