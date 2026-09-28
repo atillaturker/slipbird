@@ -12,6 +12,7 @@ import { DateField } from '@/components/DateField';
 import { Disclosure } from '@/components/Disclosure';
 import { FieldLabel } from '@/components/FieldLabel';
 import { IconButton } from '@/components/IconButton';
+import { ReceiptPages } from '@/components/ReceiptPages';
 import { currencySymbol } from '@/lib/money';
 import type { ReceiptFormError } from '@/lib/receipt-form';
 import { paymentMethods, type PaymentMethod } from '@/lib/types';
@@ -84,6 +85,7 @@ export default function ManualEntryScreen() {
       <ScrollView
         keyboardShouldPersistTaps="handled"
         contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[12], gap: space[6] }}>
+        <ReceiptPages uris={receiptForm.imageUris} />
         <SegmentedControl options={Object.values(tabLabels)} value={tabLabels[tab]} onChange={(v) => setTab(v === tabLabels.items ? 'items' : 'receipt')} />
 
         {tab === 'receipt' ? (

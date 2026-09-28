@@ -31,7 +31,30 @@
       ],
       "expo-localization",
       "expo-sqlite",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Slipbird uses the camera to scan receipts and invoice QR codes. Photos stay on this device.",
+          "microphonePermission": false,
+          "recordAudioAndroid": false,
+          "barcodeScannerEnabled": true
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Slipbird lets you import receipt photos from your library. Photos stay on this device.",
+          "cameraPermission": "Slipbird uses the camera to scan receipts and invoice QR codes. Photos stay on this device.",
+          "microphonePermission": false
+        }
+      ],
+      [
+        "react-native-document-scanner-plugin",
+        {
+          "cameraPermission": "Slipbird uses the camera to scan receipts and invoice QR codes. Photos stay on this device."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

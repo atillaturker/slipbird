@@ -8,7 +8,7 @@ Spec for the 13 design-system components in `src/components/`. Build them in Rea
 export type Category = 'groceries' | 'dining' | 'transport' | 'shopping' | 'health' | 'bills' | 'home' | 'entertainment' | 'other';
 type Press = { onPress?: () => void };
 export function Button(p: Press & { variant?: 'primary' | 'secondary' | 'ghost' | 'danger'; size?: 'lg' | 'md'; block?: boolean; disabled?: boolean; children: React.ReactNode }): React.ReactElement;
-export function ScanButton(p: Press & { label?: string }): React.ReactElement;
+export function ScanButton(p: Press & { onLongPress?: () => void; label?: string }): React.ReactElement;
 export function Chip(p: Press & { selected?: boolean; category?: Category; children: React.ReactNode }): React.ReactElement;
 export function Badge(p: { tone?: 'neutral' | 'verified' | 'review' | 'over'; children: React.ReactNode }): React.ReactElement;
 export function SegmentedControl(p: { options: string[]; value?: string; onChange?: (v: string) => void }): React.ReactElement;
@@ -35,7 +35,7 @@ Every action except scanning. Props: `variant` (`primary` default, `secondary`, 
 
 ## ScanButton
 
-The round stamp-green camera button centred in the tab bar — the app's primary action on every main screen. Props: `onPress`, `label` (accessibility label, default "Scan receipt").
+The round stamp-green camera button centred in the tab bar — the app's primary action on every main screen. Props: `onPress`, `onLongPress` (opens the scan options), `label` (accessibility label, default "Scan receipt").
 
 - Always present on Home, Receipts, Insights and Budgets; hidden on review, detail and settings.
 - Opens the camera directly in auto-capture mode; long-press offers "Import from photos" and "Scan QR (e-Arşiv)".

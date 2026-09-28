@@ -9,6 +9,29 @@ const base = (patch: Partial<ReceiptForm> = {}): ReceiptForm => ({
   ...patch,
 });
 
+const savedReceipt = (): Receipt => ({
+  id: 'r1',
+  merchant: 'Migros',
+  merchantNormalized: null,
+  date: '2026-10-10',
+  time: null,
+  totalMinor: 123456,
+  currency: 'TRY',
+  category: 'groceries',
+  paymentMethod: 'card',
+  note: null,
+  source: 'manual',
+  status: 'saved',
+  ocrText: null,
+  ettn: null,
+  documentNumber: null,
+  imagePaths: [],
+  items: [{ name: 'Peynir', qty: 0.45, amountMinor: 21200 }],
+  taxes: [{ rate: 10, amountMinor: 1927 }],
+  createdAt: '',
+  updatedAt: '',
+});
+
 describe('validateReceiptForm', () => {
   it('accepts a minimal receipt and parses money to minor units', () => {
     const result = validateReceiptForm(base(), today, 'tr');
@@ -74,32 +97,19 @@ describe('validateReceiptForm', () => {
 
 describe('receiptToForm', () => {
   it('formats a saved receipt for editing and round-trips', () => {
-    const receipt: Receipt = {
-      id: 'r1',
-      merchant: 'Migros',
-      merchantNormalized: null,
-      date: '2026-10-10',
-      time: null,
-      totalMinor: 123456,
-      currency: 'TRY',
-      category: 'groceries',
-      paymentMethod: 'card',
-      note: null,
-      source: 'manual',
-      status: 'saved',
-      ocrText: null,
-      ettn: null,
-      documentNumber: null,
-      imagePaths: [],
-      items: [{ name: 'Peynir', qty: 0.45, amountMinor: 21200 }],
-      taxes: [{ rate: 10, amountMinor: 1927 }],
-      createdAt: '',
-      updatedAt: '',
-    };
+    const receipt = savedReceipt();
     const form = receiptToForm(receipt, 'tr');
     expect(form.total.replace(/ /g, ' ')).toBe('1.234,56');
     expect(form.items[0]).toEqual({ name: 'Peynir', qty: '0,45', amount: '212,00' });
     const result = validateReceiptForm(form, today, 'tr');
     expect(result.ok && result.input).toMatchObject({ totalMinor: 123456, items: receipt.items, taxes: receipt.taxes, category: 'groceries', paymentMethod: 'card' });
+  });
+
+  it('leaves the total empty for a scan that has none yet', () => {
+    const form = receiptToForm(
+      { ...savedReceipt(), totalMinor: 0, status: 'needs_review', source: 'scan' },
+      'tr',
+    );
+    expect(form.total).toBe('');
   });
 });

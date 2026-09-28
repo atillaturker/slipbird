@@ -19,10 +19,10 @@ const TABS: Record<string, { icon: Icon; label: 'tabs.home' | 'tabs.receipts' | 
   budgets: { icon: Wallet, label: 'tabs.budgets' },
 };
 
-type Props = BottomTabBarProps & { onScan?: () => void };
+type Props = BottomTabBarProps & { onScan?: () => void; onScanLongPress?: () => void };
 
 /** App tab bar: Home · Receipts · Scan · Insights · Budgets. */
-export function TabBar({ state, navigation, insets, onScan }: Props) {
+export function TabBar({ state, navigation, insets, onScan, onScanLongPress }: Props) {
   const { t } = useTranslation();
   const { colors, space, size, type } = useTheme();
 
@@ -69,7 +69,7 @@ export function TabBar({ state, navigation, insets, onScan }: Props) {
       {state.routes.slice(0, half).map((_, i) => tab(i))}
       <View style={{ width: size.scanButton + space[4], alignItems: 'center' }}>
         <View style={{ marginTop: -SCAN_LIFT }}>
-          <ScanButton onPress={onScan} />
+          <ScanButton onPress={onScan} onLongPress={onScanLongPress} />
         </View>
       </View>
       {state.routes.slice(half).map((_, i) => tab(half + i))}

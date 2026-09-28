@@ -10,10 +10,11 @@ const ICON_SIZE = 28;
 
 type Props = {
   onPress?: () => void;
+  onLongPress?: () => void;
   label?: string;
 };
 
-export function ScanButton({ onPress, label }: Props) {
+export function ScanButton({ onPress, onLongPress, label }: Props) {
   const { t } = useTranslation();
   const { colors, radius, size, shadow } = useTheme();
 
@@ -25,6 +26,13 @@ export function ScanButton({ onPress, label }: Props) {
         void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
         onPress?.();
       }}
+      onLongPress={
+        onLongPress &&
+        (() => {
+          void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+          onLongPress();
+        })
+      }
       style={[
         {
           width: size.scanButton,

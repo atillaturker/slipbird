@@ -18,6 +18,8 @@ export function getDb(): SQLiteDatabase {
       db.execSync(`PRAGMA user_version = ${migration.version}`);
     });
   }
+  // A scan interrupted by the app being closed never finishes: offer retake/manual entry instead.
+  db.runSync("UPDATE receipts SET status = 'failed' WHERE status = 'processing'");
   database = db;
   return db;
 }

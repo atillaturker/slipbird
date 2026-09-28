@@ -9,7 +9,18 @@
     "budgets": "Budgets"
   },
   "scan": {
-    "button": "Scan receipt"
+    "button": "Scan receipt",
+    "menuTitle": "More ways to add",
+    "importPhotos": "Import from photos",
+    "scanQr": "Scan QR (e-Arşiv)",
+    "cancel": "Cancel",
+    "pagesDropped": "Only the first 3 pages were kept.",
+    "scannerFailed": "Couldn’t open the scanner. You can import a photo or add the receipt manually.",
+    "importFailed": "Couldn’t open your photos. Check Slipbird’s photo access in Settings.",
+    "failedTitle": "Couldn’t read this receipt — try again with more light",
+    "failedBody": "Retake the photo, or enter the details yourself.",
+    "retake": "Retake photo",
+    "enterManually": "Enter manually"
   },
   "home": {
     "title": "This month",
@@ -218,5 +229,20 @@
     "payment": "Payment method",
     "note": "Note",
     "added": "Added"
+  },
+  "qr": {
+    "close": "Close",
+    "hint": "Point the camera at the QR code on an e-Arşiv or e-Fatura invoice.",
+    "notGib": "This QR code isn’t an e-Arşiv or e-Fatura invoice.",
+    "permissionTitle": "Camera access needed",
+    "permissionBody": "Slipbird uses the camera to read the QR code on your invoice. Nothing is recorded.",
+    "allow": "Allow camera",
+    "openSettings": "Open settings"
+  },
+  "photos": {
+    "label": "Receipt photos",
+    "page": "Page {{n}} of {{count}}",
+    "open": "Open page {{n}}",
+    "close": "Close"
   }
 }

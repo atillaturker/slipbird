@@ -13,6 +13,7 @@ import { SearchField } from '@/components/SearchField';
 import { dayLabel, groupByDay } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { receiptBadge } from '@/lib/receipt-status';
+import { thumbnailUri } from '@/services/images';
 import { useReceipts } from '@/store/receipts';
 import { categoryOrder, useTheme } from '@/theme';
 
@@ -106,11 +107,15 @@ export default function ReceiptsScreen() {
               category={item.category}
               categoryLabel={t(`category.${item.category}`)}
               date={item.time ?? section.label}
-              amount={formatMoney(item.totalMinor, item.currency, i18n.language)}
+              amount={item.totalMinor > 0 ? formatMoney(item.totalMinor, item.currency, i18n.language) : '—'}
               status={badge ? { tone: badge.tone, label: t(`status.${badge.label}`) } : undefined}
               processing={item.status === 'processing'}
-              thumbnailUri={item.imagePaths[0]}
-              onPress={() => router.push({ pathname: '/receipt/[id]', params: { id: item.id } })}
+              thumbnailUri={thumbnailUri(item.id, item.imagePaths)}
+              onPress={() =>
+                item.status === 'needs_review'
+                  ? router.push({ pathname: '/receipt/new', params: { id: item.id } })
+                  : router.push({ pathname: '/receipt/[id]', params: { id: item.id } })
+              }
               onDelete={() => void remove(item.id)}
             />
           </GroupRow>

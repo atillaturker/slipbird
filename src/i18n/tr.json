@@ -9,7 +9,18 @@
     "budgets": "Bütçeler"
   },
   "scan": {
-    "button": "Fiş tara"
+    "button": "Fiş tara",
+    "menuTitle": "Başka ekleme yolları",
+    "importPhotos": "Fotoğraflardan içe aktar",
+    "scanQr": "QR tara (e-Arşiv)",
+    "cancel": "Vazgeç",
+    "pagesDropped": "Yalnızca ilk 3 sayfa saklandı.",
+    "scannerFailed": "Tarayıcı açılamadı. Bir fotoğraf içe aktarabilir ya da fişi elle ekleyebilirsiniz.",
+    "importFailed": "Fotoğraflarınız açılamadı. Ayarlar’dan Slipbird’in fotoğraf iznini kontrol edin.",
+    "failedTitle": "Bu fiş okunamadı — daha iyi ışıkta tekrar deneyin",
+    "failedBody": "Fotoğrafı yeniden çekin ya da bilgileri kendiniz girin.",
+    "retake": "Yeniden çek",
+    "enterManually": "Elle gir"
   },
   "home": {
     "title": "Bu ay",
@@ -218,5 +229,20 @@
     "payment": "Ödeme yöntemi",
     "note": "Not",
     "added": "Eklenme"
+  },
+  "qr": {
+    "close": "Kapat",
+    "hint": "Kamerayı e-Arşiv ya da e-Fatura üzerindeki QR koduna tutun.",
+    "notGib": "Bu QR kodu bir e-Arşiv ya da e-Fatura değil.",
+    "permissionTitle": "Kamera izni gerekli",
+    "permissionBody": "Slipbird, faturanızdaki QR kodunu okumak için kamerayı kullanır. Hiçbir şey kaydedilmez.",
+    "allow": "Kameraya izin ver",
+    "openSettings": "Ayarları aç"
+  },
+  "photos": {
+    "label": "Fiş fotoğrafları",
+    "page": "Sayfa {{n}} / {{count}}",
+    "open": "{{n}}. sayfayı aç",
+    "close": "Kapat"
   }
 }

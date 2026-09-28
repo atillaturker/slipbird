@@ -10,7 +10,9 @@ import { formatReceiptDate } from '@/lib/dates';
 import { formatMoney } from '@/lib/money';
 import { formatDecimal } from '@/lib/number';
 import { receiptBadge } from '@/lib/receipt-status';
+import { imageUri } from '@/services/images';
 import { useReceipt, useReceipts } from '@/store/receipts';
+import { useScanActions } from '@/store/scan';
 import { useTheme } from '@/theme';
 
 export default function ReceiptDetailScreen() {
@@ -20,6 +22,7 @@ export default function ReceiptDetailScreen() {
   const insets = useSafeAreaInsets();
   const receipt = useReceipt(id);
   const remove = useReceipts((s) => s.remove);
+  const { retake } = useScanActions();
   const lang = i18n.language;
 
   const screen = <Stack.Screen options={{ title: t('detail.title') }} />;
@@ -34,9 +37,6 @@ export default function ReceiptDetailScreen() {
     );
   }
 
-  const money = (minor: number) => formatMoney(minor, receipt.currency, lang);
-  const badge = receiptBadge(receipt);
-
   const confirmDelete = () =>
     Alert.alert(t('detail.deleteTitle'), t('detail.deleteBody'), [
       { text: t('detail.cancel'), style: 'cancel' },
@@ -49,6 +49,27 @@ export default function ReceiptDetailScreen() {
         },
       },
     ]);
+
+  if (receipt.status === 'failed') {
+    return (
+      <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: space[4], paddingBottom: insets.bottom + space[12], gap: space[4] }}>
+        {screen}
+        <EmptyState title={t('scan.failedTitle')} body={t('scan.failedBody')} />
+        <Button block onPress={() => void retake(receipt.id)}>
+          {t('scan.retake')}
+        </Button>
+        <Button variant="secondary" block onPress={() => router.replace({ pathname: '/receipt/new', params: { id: receipt.id } })}>
+          {t('scan.enterManually')}
+        </Button>
+        <Button variant="danger" block onPress={confirmDelete}>
+          {t('detail.delete')}
+        </Button>
+      </ScrollView>
+    );
+  }
+
+  const money = (minor: number) => formatMoney(minor, receipt.currency, lang);
+  const badge = receiptBadge(receipt);
 
   return (
     <ScrollView
@@ -71,7 +92,7 @@ export default function ReceiptDetailScreen() {
         }))}
         total={money(receipt.totalMinor)}
         totalLabel={t('receiptCard.total')}
-        images={receipt.imagePaths}
+        images={receipt.imagePaths.map(imageUri)}
       />
 
       <ListGroup>

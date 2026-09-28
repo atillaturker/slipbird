@@ -131,7 +131,8 @@ export function receiptToForm(receipt: Receipt, locale: string): ReceiptForm {
   return {
     merchant: receipt.merchant ?? '',
     date: receipt.date,
-    total: money(receipt.totalMinor),
+    // Scans waiting for review have no total yet: start empty rather than at 0,00.
+    total: receipt.totalMinor > 0 ? money(receipt.totalMinor) : '',
     currency: receipt.currency,
     category: receipt.category,
     paymentMethod: receipt.paymentMethod,

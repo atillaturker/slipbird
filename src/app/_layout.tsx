@@ -53,6 +53,7 @@ export default function RootLayout() {
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="receipt/[id]" options={header} />
           <Stack.Screen name="receipt/new" options={{ ...header, presentation: 'modal' }} />
+          <Stack.Screen name="scan/capture" options={{ presentation: 'fullScreenModal', animation: 'slide_from_bottom' }} />
           <Stack.Screen name="dev/components" />
         </Stack>
       </ThemeProvider>

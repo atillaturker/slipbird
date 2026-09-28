@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toISODate } from '@/lib/dates';
 import { emptyReceiptForm, receiptToForm, validateReceiptForm, type ReceiptForm, type ReceiptFormErrors } from '@/lib/receipt-form';
 import type { ReceiptInput } from '@/lib/types';
+import { imageUri } from '@/services/images';
 
 import { useReceipt, useReceipts } from './receipts';
 import { useSettings } from './settings';
@@ -87,6 +88,8 @@ export function useReceiptForm(id: string | undefined) {
     form,
     /** The receipt being edited is gone (deleted elsewhere). */
     missing: !!id && existing === null,
+    /** Photos of the receipt being edited, as URIs the Image component can show. */
+    imageUris: (existing?.imagePaths ?? []).map(imageUri),
     errors,
     saving,
     homeCurrency,

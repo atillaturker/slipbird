@@ -4,6 +4,7 @@ import { create } from 'zustand';
 import { getDb } from '@/db';
 import { deleteReceipt, getReceipt, hasReceipts, listReceipts, saveReceipt } from '@/db/receipts';
 import type { Receipt, ReceiptInput, ReceiptSummary } from '@/lib/types';
+import { deleteReceiptImages } from '@/services/images';
 import type { Category } from '@/theme';
 
 type ReceiptsState = {
@@ -57,6 +58,11 @@ export const useReceipts = create<ReceiptsState>((set, get) => ({
   remove: async (id) => {
     set((s) => ({ list: s.list.filter((r) => r.id !== id) }));
     await deleteReceipt(getDb(), id);
+    try {
+      deleteReceiptImages(id);
+    } catch {
+      // The row is gone; a leftover image folder is harmless and holds nothing the app shows.
+    }
     set((s) => ({ revision: s.revision + 1 }));
     await get().refresh();
   },

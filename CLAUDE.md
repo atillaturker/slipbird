@@ -91,3 +91,7 @@ A milestone is done only when typecheck, lint and tests pass.
 - One milestone from `docs/SPEC.md` at a time: plan briefly, implement, then summarize what changed in a few lines and wait for review.
 - Edit in place; don't rewrite whole files for small changes.
 - When a spec detail is ambiguous or a native module behaves differently than described, stop and ask instead of guessing.
+
+# DO NOT
+
+- Do not add Co-authored-By to commit messages
