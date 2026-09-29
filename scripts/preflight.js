@@ -14,6 +14,8 @@ const path = require('path');
 const { spawnSync } = require('child_process');
 
 const { checkAppConfig, checkEnvExample, checkSecretNames, checkTrackedFiles, summarize } = require('./lib/preflight-checks');
+const { readPngInfo } = require('./lib/png-info');
+const { checkFeatureGraphic, checkPlayIcon } = require('./lib/store-image-rules');
 
 const root = path.join(__dirname, '..');
 const results = [];
@@ -50,16 +52,18 @@ section('Repository', [...checkEnvExample(envExample), ...checkTrackedFiles(trac
 // 3. App config.
 section('app.json', checkAppConfig(JSON.parse(fs.readFileSync(path.join(root, 'app.json'), 'utf8'))));
 
-// 4. Store material.
-const assets = ['docs/store/assets/feature-graphic.png', 'docs/store/assets/play-icon-512.png'];
-section(
-  'Store listing',
-  assets.map((f) =>
-    fs.existsSync(path.join(root, f))
-      ? { level: 'pass', label: `${f} exists`, detail: /placeholder/i.test(fs.readFileSync(path.join(root, 'scripts/generate-store-assets.js'), 'utf8')) ? 'reminder: it is a generated placeholder unless you replaced it' : undefined }
-      : { level: 'warn', label: `${f} is missing`, detail: 'run: node scripts/generate-store-assets.js (placeholder) or add your own' },
-  ),
-);
+// 4. Store material: the images must meet Play's rules; a generated placeholder is a warning until you replace it.
+function storeImage(relative, check) {
+  const file = path.join(root, relative);
+  if (!fs.existsSync(file)) return { level: 'warn', label: `${relative} is missing`, detail: 'run: node scripts/generate-store-assets.js (placeholder) or add your own' };
+  const info = readPngInfo(fs.readFileSync(file));
+  const problems = check(info);
+  if (problems.length) return { level: 'fail', label: `${relative} breaks Play's rules`, detail: problems.join('; ') };
+  return info.placeholder
+    ? { level: 'warn', label: `${relative} is still the generated placeholder`, detail: 'replace it with final artwork before publishing' }
+    : { level: 'pass', label: `${relative} meets Play's rules (${info.width}×${info.height})` };
+}
+section('Store images', [storeImage('docs/store/assets/feature-graphic.png', checkFeatureGraphic), storeImage('docs/store/assets/play-icon-512.png', checkPlayIcon)]);
 
 // 5. The published privacy policy (asynchronous).
 const privacyUrl = /PRIVACY_URL\s*=\s*'([^']+)'/.exec(fs.readFileSync(path.join(root, 'src/config.ts'), 'utf8'))?.[1];

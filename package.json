@@ -60,7 +60,8 @@
     "lint": "expo lint",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "preflight": "node scripts/preflight.js"
+    "preflight": "node scripts/preflight.js",
+    "check:store-images": "node scripts/check-store-images.js"
   },
   "private": true,
   "jest": {
