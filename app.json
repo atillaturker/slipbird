@@ -92,7 +92,8 @@
           "icon": "./assets/images/android-icon-monochrome.png",
           "color": "#0b6b4c"
         }
-      ]
+      ],
+      "./plugins/withLatinOnlyTextRecognition"
     ],
     "experiments": {
       "typedRoutes": true,
