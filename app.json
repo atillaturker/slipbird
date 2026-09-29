@@ -113,12 +113,12 @@
       "en": "./locales/en.json",
       "tr": "./locales/tr.json"
     },
+    "owner": "atilla2",
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "0f583a39-ab03-43e4-a2ad-2ab2878d2d9c"
+        "projectId": "61b134e5-acc0-425c-ac34-abdfc3a120f6"
       }
-    },
-    "owner": "atilla2"
+    }
   }
 }
