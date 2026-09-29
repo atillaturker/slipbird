@@ -44,6 +44,7 @@
     "zustand": "^5.0.15"
   },
   "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "@types/jest": "^29.5.14",
     "@types/react": "~19.2.2",
     "eslint": "^9.39.5",

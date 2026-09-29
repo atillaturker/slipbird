@@ -70,7 +70,9 @@ Test purchases with an Apple sandbox account and a Google Play licence tester be
 
 ## 5. Store listings
 
-Texts (English and Turkish, within the stores' limits, checked by `npx jest`) are in `docs/store/listing.json`: name, subtitle, promotional text, keywords, short and full descriptions, what's new, categories, support and privacy URLs. Paste them into App Store Connect and Play Console. Screenshots are not generated: take them from a build on real devices in both languages, light and dark.
+Texts (English and Turkish, within the stores' limits, checked by `npx jest`) are in `docs/store/listing.json`: name, subtitle, promotional text, keywords, short and full descriptions, what's new, categories, support and privacy URLs. Paste them into App Store Connect and Play Console. **Placeholder graphics.** `node scripts/generate-store-assets.js` writes `docs/store/assets/feature-graphic.png` (1024×500, 24-bit RGB, no alpha channel) and `docs/store/assets/play-icon-512.png` (512×512, 32-bit and fully opaque) from the brand colours and the app's Instrument Sans font: the mark, the wordmark, and the tagline in English ("Scan it. Check it. Done.") and Turkish ("Tara. Kontrol et. Bitti."). They are **placeholders**. It needs the dev dependency `@resvg/resvg-js` (SVG to pixels; in `devDependencies`, installed by `npm install`). Each generated file carries the PNG text tag `slipbird-placeholder`, so the script never overwrites artwork you put there yourself (add `--force` to overwrite anyway), and `npm run preflight` warns while a file still has the tag. To replace one: export your final art to the same file name.
+
+Screenshots are not generated: take them from a build on real devices in both languages, light and dark.
 
 ## 6. Pre-release checks
 
