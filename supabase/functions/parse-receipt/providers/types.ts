@@ -14,6 +14,8 @@ export type Completion = { text: string; usage: TokenUsage; finishReason: string
 /** What every provider adapter implements: one JSON-constrained completion. Failures throw ParserError. */
 export interface ProviderAdapter {
   readonly name: string;
+  /** The model this adapter calls (for logs and the response header). */
+  readonly model: string;
   complete(request: { system: string; user: string; jsonSchema: Record<string, unknown> }): Promise<Completion>;
 }
 
@@ -32,7 +34,7 @@ export type ProviderAttempt = {
 
 /** The single interface the handler uses, whatever the providers. */
 export interface ReceiptParser {
-  parse(text: string, hints: ParseHints): Promise<{ receipt: ParsedReceipt; usage: TokenUsage; provider: string; attempts: ProviderAttempt[] }>;
+  parse(text: string, hints: ParseHints): Promise<{ receipt: ParsedReceipt; usage: TokenUsage; provider: string; model: string; attempts: ProviderAttempt[] }>;
 }
 
 /**

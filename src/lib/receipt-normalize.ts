@@ -7,7 +7,7 @@ import { fromISODate, toISODate } from './dates';
 import type { GibQr } from './gib-qr';
 import { detectNumberStyle, parseAmount } from './money';
 import type { Confidence, ParsedReceipt } from './parsed-receipt';
-import { documentTypes, itemUnits, paymentMethods, type DocumentType, type PaymentMethod, type ReceiptItem, type ReceiptTax } from './types';
+import { documentTypes, itemUnits, paymentMethods, type DocumentType, type ItemUnit, type PaymentMethod, type ReceiptItem, type ReceiptTax } from './types';
 
 /** Fields the review screen flags. */
 export type ReviewFieldKey = 'merchant' | 'date' | 'total' | 'currency' | 'category';
@@ -46,6 +46,7 @@ export type NormalizeContext = {
 
 // Items may differ from the total by rounding and small fees; beyond 1% something was misread.
 const ITEMS_TOLERANCE = 0.01;
+const GRAMS_PER_KG = 1000;
 const MAX_AGE_DAYS = 365;
 
 const high = { confidence: 'high' as const };
@@ -100,8 +101,15 @@ export function normalizeParsedReceipt(parsed: ParsedReceipt, ctx: NormalizeCont
     const amountMinor = amount(item.amount);
     const name = item.name.trim();
     if (amountMinor === null || !name) continue;
-    const qty = item.qty !== null && item.qty > 0 ? item.qty : null;
-    const unit = qty !== null && item.unit && itemUnits.includes(item.unit) ? item.unit : null;
+    let qty = item.qty !== null && item.qty > 0 ? item.qty : null;
+    let unit: ItemUnit | null = null;
+    if (qty !== null && item.unit === 'g') {
+      // Grams are stored as kilograms, so every weighed line reads the same ("0,25 kg").
+      qty /= GRAMS_PER_KG;
+      unit = 'kg';
+    } else if (qty !== null && item.unit && item.unit !== 'g' && itemUnits.includes(item.unit)) {
+      unit = item.unit;
+    }
     items.push({ name, qty, unit, amountMinor });
   }
 

@@ -40,6 +40,7 @@ export function classifyGroqFailure(status: number): 'busy' | 'config_error' | '
 export function groqAdapter(apiKey: string, model: string): ProviderAdapter {
   return {
     name: 'groq',
+    model,
     async complete({ system, user, jsonSchema }) {
       let response: Response;
       try {

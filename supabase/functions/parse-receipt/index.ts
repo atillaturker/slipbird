@@ -23,8 +23,8 @@ const STATUS: Record<ErrorCode, number> = {
   config_error: 500,
 };
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json' } });
+function json(body: unknown, status = 200, headers: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json', ...headers } });
 }
 
 function fail(code: ErrorCode, retryAfterSeconds: number | null = null): Response {
@@ -138,9 +138,11 @@ Deno.serve(async (req) => {
   };
   let skippedProviders: string[] = [];
   try {
-    const chain = adaptersFromEnv(Deno.env);
+    // Trying a single model (bake-off) is opt-in per deployment: ALLOW_PARSER_OVERRIDE=true, development only.
+    const override = Deno.env.get('ALLOW_PARSER_OVERRIDE') === 'true' ? input.data.debugProvider : undefined;
+    const chain = adaptersFromEnv(Deno.env, override);
     skippedProviders = chain.skipped;
-    const { receipt, usage, provider, attempts } = await createParser(chain.adapters).parse(input.data.text, {
+    const { receipt, usage, provider, model, attempts } = await createParser(chain.adapters).parse(input.data.text, {
       locale: input.data.locale,
       deviceCurrency: input.data.deviceCurrency,
       countryHint: input.data.countryHint ?? null,
@@ -148,8 +150,9 @@ Deno.serve(async (req) => {
     // Count only successful parses against the quota.
     const { data: quotaUsed } = await admin.rpc('record_scan', { p_user: userId, p_month: month });
     const answered = attempts[attempts.length - 1];
-    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: provider, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, quotaBypassed: !enforced, ...(pro ? { pro: true } : {}), startedAt, ...ref });
-    return json(receipt);
+    log({ userId, outcome: 'ok', usage, quotaUsed: typeof quotaUsed === 'number' ? quotaUsed : null, answeredBy: `${provider}/${model}`, itemsReturned: receipt.items.length, finishReason: answered?.finishReason ?? null, attempts, skippedProviders, quotaBypassed: !enforced, ...(pro ? { pro: true } : {}), startedAt, ...ref });
+    // Which model answered: handy when comparing models. Not sensitive.
+    return json(receipt, 200, { 'x-parser': `${provider}/${model}` });
   } catch (error) {
     if (error instanceof ParserError) {
       log({ userId, outcome: error.code, usage: error.usage, finishReason: error.attempts[error.attempts.length - 1]?.finishReason ?? null, attempts: error.attempts, skippedProviders, startedAt, ...ref });

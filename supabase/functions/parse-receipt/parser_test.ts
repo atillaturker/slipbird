@@ -11,6 +11,7 @@ const valid = cagriExpected;
 function fakeAdapter(outputs: string[]): ProviderAdapter & { calls: number } {
   const adapter = {
     name: 'fake',
+    model: 'fake-model',
     calls: 0,
     complete() {
       const text = outputs[Math.min(adapter.calls, outputs.length - 1)];
@@ -48,7 +49,7 @@ Deno.test('fails with parse_failed after two bad outputs', async () => {
 });
 
 Deno.test('passes provider errors through (busy stays busy)', async () => {
-  const adapter: ProviderAdapter = { name: 'fake', complete: () => Promise.reject(new ParserError('busy')) };
+  const adapter: ProviderAdapter = { name: 'fake', model: 'fake-model', complete: () => Promise.reject(new ParserError('busy')) };
   const error = await assertRejects(() => createParser([adapter]).parse('text', hints), ParserError);
   assertEquals(error.code, 'busy');
 });

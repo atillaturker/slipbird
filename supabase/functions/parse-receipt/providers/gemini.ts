@@ -88,6 +88,7 @@ export function thinkingConfig(model: string): Record<string, unknown> {
 export function geminiAdapter(apiKey: string, model: string): ProviderAdapter {
   return {
     name: 'gemini',
+    model,
     async complete({ system, user, jsonSchema }) {
       let response: Response;
       try {

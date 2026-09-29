@@ -44,6 +44,21 @@ or `http://10.0.2.2:54321` from the Android emulator), then restart Metro.
 
 To test parsing without the 15-a-month limit, keep `PARSE_QUOTA_DISABLED=true` in `supabase/functions/.env` (hosted: `npx supabase secrets set PARSE_QUOTA_DISABLED=true`, and `secrets unset` before release).
 
+Check the deployed backend end to end (anonymous sign-in, auth guards, a real parse of a synthetic receipt; reads `.env.local`):
+
+```bash
+node scripts/smoke-test-backend.js
+```
+
+Compare models on the fixtures through the deployed function (development only; the override is off unless you set the flag, and each model uses its own anonymous user):
+
+```bash
+npx supabase secrets set ALLOW_PARSER_OVERRIDE=true
+cd supabase/functions/parse-receipt
+npx deno run --allow-net --allow-read --allow-env --config deno.json bakeoff.ts --runs 2 groq:openai/gpt-oss-120b gemini:gemini-3.5-flash-lite
+npx supabase secrets unset ALLOW_PARSER_OVERRIDE     # always, afterwards
+```
+
 Function tests (Deno, no install needed):
 
 ```bash

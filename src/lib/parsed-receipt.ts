@@ -15,7 +15,8 @@ export type ParsedReceipt = {
   total: { value: string | null; confidence: Confidence };
   currency: { value: string | null; confidence: Confidence };
   tax: { rate: number | null; amount: string }[];
-  items: { name: string; qty: number | null; unit: ItemUnit | null; amount: string }[];
+  /** `g` is what the parser reports for grams; the app stores it as kg (see receipt-normalize). */
+  items: { name: string; qty: number | null; unit: ItemUnit | 'g' | null; amount: string }[];
   paymentMethod: 'card' | 'cash' | 'other' | null;
   category: { value: Category; confidence: Confidence };
   documentType: DocumentType;

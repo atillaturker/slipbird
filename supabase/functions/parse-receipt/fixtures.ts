@@ -161,3 +161,37 @@ export const longExpected = {
   category: { value: 'groceries', confidence: 'high' },
   documentType: 'receipt',
 } as const;
+
+/** Grams on a quantity line, kg on another, a "1 LT" pack size, a counted line; Turkish with no currency symbol. */
+export const gramsOcr = `ÖZDEMİR ŞARKÜTERİ LTD. ŞTİ.
+ÖZDEMİR ŞARKÜTERİ
+TARİH: 05.10.2026 SAAT: 12:20
+FİŞ NO: 0311
+350 GR X 420,00
+KAŞAR PEYNİRİ  %1 *147,00
+0,600 KG X 310,00
+SUCUK  %1 *186,00
+SÜT 1 LT  %1 *34,50
+2 AD X 22,00
+EKMEK  %1 *44,00
+TOPKDV  *4,07
+TOPLAM  *411,50
+NAKİT  *411,50`;
+
+export const gramsExpected = {
+  merchant: { value: 'Özdemir Şarküteri Ltd. Şti.', confidence: 'high' },
+  merchantDisplay: 'Özdemir Şarküteri',
+  date: { value: '2026-10-05', time: '12:20', confidence: 'high' },
+  total: { value: '411,50', confidence: 'high' },
+  currency: { value: 'TRY', confidence: 'high' },
+  tax: [{ rate: null, amount: '4,07' }],
+  items: [
+    { name: 'KAŞAR PEYNİRİ', qty: 350, unit: 'g', amount: '147,00' },
+    { name: 'SUCUK', qty: 0.6, unit: 'kg', amount: '186,00' },
+    { name: 'SÜT 1 LT', qty: null, unit: null, amount: '34,50' },
+    { name: 'EKMEK', qty: 2, unit: 'pcs', amount: '44,00' },
+  ],
+  paymentMethod: 'cash',
+  category: { value: 'groceries', confidence: 'high' },
+  documentType: 'receipt',
+} as const;

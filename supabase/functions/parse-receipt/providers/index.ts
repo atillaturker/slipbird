@@ -11,7 +11,14 @@ type Env = { get(key: string): string | undefined };
  * and key: GROQ_MODEL / GROQ_API_KEY, GEMINI_MODEL / GEMINI_API_KEY. Keys come from function secrets only.
  * Unknown or unconfigured providers are left out (and reported); none usable → config_error.
  */
-export function adaptersFromEnv(env: Env): { adapters: ProviderAdapter[]; skipped: string[] } {
+export function adaptersFromEnv(env: Env, override?: string): { adapters: ProviderAdapter[]; skipped: string[] } {
+  // Development only (the caller checks ALLOW_PARSER_OVERRIDE): one "provider:model", no fallback, so a failure is visible.
+  if (override) {
+    const [name, ...rest] = override.split(':');
+    const adapter = adapterFor(name, env, rest.join(':'));
+    if (!adapter) throw new ParserError('config_error');
+    return { adapters: [adapter], skipped: [] };
+  }
   const names = (env.get('PARSER_PROVIDER') ?? '')
     .split(',')
     .map((s) => s.trim().toLowerCase())
@@ -27,16 +34,16 @@ export function adaptersFromEnv(env: Env): { adapters: ProviderAdapter[]; skippe
   return { adapters, skipped };
 }
 
-function adapterFor(name: string, env: Env): ProviderAdapter | null {
+function adapterFor(name: string, env: Env, modelOverride?: string): ProviderAdapter | null {
   switch (name) {
     case 'gemini': {
       const key = env.get('GEMINI_API_KEY');
-      const model = env.get('GEMINI_MODEL');
+      const model = modelOverride || env.get('GEMINI_MODEL');
       return key && model ? geminiAdapter(key, model) : null;
     }
     case 'groq': {
       const key = env.get('GROQ_API_KEY');
-      const model = env.get('GROQ_MODEL');
+      const model = modelOverride || env.get('GROQ_MODEL');
       return key && model ? groqAdapter(key, model) : null;
     }
     default:
@@ -88,7 +95,7 @@ export function createParser(adapters: ProviderAdapter[], now: () => number = Da
             const parsed = ParsedReceiptSchema.safeParse(json);
             if (parsed.success) {
               attempts.push({ provider: adapter.name, outcome: 'ok', latencyMs: now() - started, invalidOutputs, finishReason, outputTokens, error: null });
-              return { receipt: parsed.data, usage, provider: adapter.name, attempts };
+              return { receipt: parsed.data, usage, provider: adapter.name, model: adapter.model, attempts };
             }
             invalidOutputs += 1;
           }

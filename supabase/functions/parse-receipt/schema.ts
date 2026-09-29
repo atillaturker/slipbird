@@ -44,7 +44,10 @@ export const ParsedReceiptSchema = z.object({
     z.object({
       name: z.string().describe('Item name with Turkish characters repaired where OCR garbled them'),
       qty: z.number().nullable().describe('Quantity or weight, e.g. 0.876 for "0,876 KG X 219,95"'),
-      unit: z.enum(['pcs', 'kg', 'l']).nullable().describe('pcs for counted items, kg or l for weighed/measured lines, null if not shown'),
+      unit: z
+        .enum(['pcs', 'kg', 'g', 'l'])
+        .nullable()
+        .describe('Unit of qty: pcs counted, kg or g weighed, l by volume. null exactly when qty is null. A size inside the product name ("SÜT 1 LT") is not a quantity.'),
       amount: z.string().describe('Line amount exactly as printed'),
     }),
   ),
@@ -72,6 +75,11 @@ export const ParseRequestSchema = z.object({
   /** Opaque local receipt id + the app's attempt number: lets logs tell client duplicates from provider retries. */
   receiptRef: z.string().max(64).optional(),
   attempt: z.number().int().min(1).max(1000).optional(),
+  /** Development only, honoured when ALLOW_PARSER_OVERRIDE=true: "provider:model" to try one model instead of the chain. */
+  debugProvider: z
+    .string()
+    .regex(/^(gemini|groq):[A-Za-z0-9._\/-]{1,80}$/)
+    .optional(),
 });
 
 export type ParseRequest = z.infer<typeof ParseRequestSchema>;

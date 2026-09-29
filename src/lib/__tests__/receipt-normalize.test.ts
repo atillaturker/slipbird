@@ -126,6 +126,24 @@ describe('display name, units and document type', () => {
     expect(r.items).toEqual([{ name: 'BEYAZ PEYNİR', qty: 0.876, unit: 'kg', amountMinor: 19268 }]);
   });
 
+  it('converts grams to kilograms', () => {
+    const r = normalizeParsedReceipt(
+      parsed({
+        total: { value: '20,00', confidence: 'high' },
+        items: [{ name: 'ZEYTİN SİYAH', qty: 250, unit: 'g', amount: '20,00' }],
+      }),
+      ctx,
+    );
+    expect(r.items).toEqual([{ name: 'ZEYTİN SİYAH', qty: 0.25, unit: 'kg', amountMinor: 2000 }]);
+    const small = normalizeParsedReceipt(parsed({ items: [{ name: 'X', qty: 5, unit: 'g', amount: '1,00' }] }), ctx);
+    expect(small.items[0]).toMatchObject({ qty: 0.005, unit: 'kg' });
+  });
+
+  it('drops a unit that has no quantity', () => {
+    const r = normalizeParsedReceipt(parsed({ items: [{ name: 'SÜT 1 LT', qty: null, unit: 'l', amount: '34,50' }] }), ctx);
+    expect(r.items[0]).toMatchObject({ qty: null, unit: null });
+  });
+
   it('keeps the display name only when there is a merchant', () => {
     expect(normalizeParsedReceipt(parsed({ merchant: { value: null, confidence: 'low' }, merchantDisplay: 'Guess' }), ctx).merchantDisplay).toBeNull();
     expect(normalizeParsedReceipt(parsed({ merchantDisplay: '  ' }), ctx).merchantDisplay).toBeNull();

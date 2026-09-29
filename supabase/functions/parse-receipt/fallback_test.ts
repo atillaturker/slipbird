@@ -11,6 +11,7 @@ const ok = JSON.stringify(cagriExpected);
 function provider(name: string, behaviour: { fail?: ParserErrorCode; retryAfterSeconds?: number; text?: string }) {
   const p = {
     name,
+    model: `${name}-model`,
     calls: 0,
     complete() {
       p.calls += 1;
@@ -90,7 +91,7 @@ Deno.test('PARSER_PROVIDER is an ordered chain; unconfigured providers are skipp
 
 Deno.test('a truncated answer is a provider failure: the next provider answers, no partial items', async () => {
   const { truncated } = await import('./providers/types.ts');
-  const cut: ProviderAdapter = { name: 'groq', complete: () => Promise.reject(truncated('length', { inputTokens: 900, outputTokens: 16384 })) };
+  const cut: ProviderAdapter = { name: 'groq', model: 'm', complete: () => Promise.reject(truncated('length', { inputTokens: 900, outputTokens: 16384 })) };
   const gemini = provider('gemini', {});
   const result = await createParser([cut, gemini]).parse('t', hints);
   assertEquals(result.provider, 'gemini');
@@ -103,4 +104,26 @@ Deno.test('a truncated answer is a provider failure: the next provider answers, 
     outputTokens: 16384,
     error: { ...NO_DETAILS, errorStatus: 'truncated', message: 'finish reason: length' },
   });
+});
+
+Deno.test('a "provider:model" override picks that one model with the provider key, and no fallback', () => {
+  const env = (vars: Record<string, string>) => ({ get: (k: string) => vars[k] });
+  const vars = { PARSER_PROVIDER: 'groq,gemini', GROQ_API_KEY: 'g', GROQ_MODEL: 'openai/gpt-oss-120b', GEMINI_API_KEY: 'k', GEMINI_MODEL: 'flash-lite' };
+  const one = adaptersFromEnv(env(vars), 'gemini:gemini-3.5-flash');
+  assertEquals(one.adapters.map((a) => [a.name, a.model]), [['gemini', 'gemini-3.5-flash']]);
+  // A model id may contain slashes and colons after the first one.
+  assertEquals(adaptersFromEnv(env(vars), 'groq:openai/gpt-oss-20b').adapters.map((a) => a.model), ['openai/gpt-oss-20b']);
+  // Without an override the configured chain (and its models) is used.
+  assertEquals(adaptersFromEnv(env(vars)).adapters.map((a) => [a.name, a.model]), [['groq', 'openai/gpt-oss-120b'], ['gemini', 'flash-lite']]);
+});
+
+Deno.test('an override for a provider without a key is a config error', () => {
+  const env = { get: (k: string) => ({ GEMINI_API_KEY: 'k' })[k as 'GEMINI_API_KEY'] };
+  let code = '';
+  try {
+    adaptersFromEnv(env, 'groq:whatever');
+  } catch (e) {
+    code = (e as ParserError).code;
+  }
+  assertEquals(code, 'config_error');
 });
