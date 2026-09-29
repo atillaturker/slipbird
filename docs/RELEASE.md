@@ -72,17 +72,53 @@ Test purchases with an Apple sandbox account and a Google Play licence tester be
 
 Texts (English and Turkish, within the stores' limits, checked by `npx jest`) are in `docs/store/listing.json`: name, subtitle, promotional text, keywords, short and full descriptions, what's new, categories, support and privacy URLs. Paste them into App Store Connect and Play Console. Screenshots are not generated: take them from a build on real devices in both languages, light and dark.
 
-## 6. Before you submit
+## 6. Pre-release checks
+
+Run this last, right before you build for the stores:
+
+```bash
+npm run preflight
+```
+
+It exits with an error if anything is wrong to ship. It reads secret **names** only (never values) and needs `npx supabase login` and a linked project. What it checks:
+
+- **`PARSE_QUOTA_DISABLED` must not be in the production secrets.** It lifts the free 15-parses-a-month limit and is for development only. If it is there:
+  ```bash
+  npx supabase secrets unset PARSE_QUOTA_DISABLED
+  npx supabase functions deploy parse-receipt
+  ```
+- **`ALLOW_PARSER_OVERRIDE` must not be set either** (it lets any signed-in user pick the AI model; it exists only for `bakeoff.ts`). Same fix:
+  ```bash
+  npx supabase secrets unset ALLOW_PARSER_OVERRIDE
+  npx supabase functions deploy parse-receipt
+  ```
+- The secrets the function needs are present: `PARSER_PROVIDER`, `REVENUECAT_SECRET_KEY` (a missing one is an error), and each provider's `*_API_KEY` and `*_MODEL` (a missing one is a warning: that provider is skipped).
+- `.env.example` holds no real values, and no `.env` file is tracked by git.
+- `app.json` has the EAS project id, matching iOS/Android ids, and an `x.y.z` version.
+- The privacy policy URL answers, and the two store images exist.
+
+You can check the secrets by hand any time with `npx supabase secrets list`.
+
+## 7. Before you submit
 
 - [ ] `PARSE_QUOTA_DISABLED` is **not** in the production function secrets.
-- [ ] Gemini is on a billed project, **or** keep the disclosure that free-tier Gemini may use text to improve Google's products (it is in the privacy policy; remove the sentence in `docs/privacy/index.html`, `src/i18n/*.json` if billing is enabled).
+- [ ] **Gemini billing disclosure.** The privacy policy currently says Google may use free-tier Gemini text to improve its products. That stays until you decide on billing. **TODO — if you enable Gemini billing (a paid project) before launch, remove that sentence in these four places** (line numbers as of this writing; search for the quoted text):
+
+  | File | Line | Remove exactly this |
+  | --- | --- | --- |
+  | `docs/privacy/index.html` | 36 (English) | ` Google may use text sent through the free tier of its Gemini API to improve its products; see the providers' policies:` — and start the sentence again as ` See the providers' policies:` so the two links stay |
+  | `docs/privacy/index.html` | 66 (Turkish) | ` Google, Gemini API’sinin ücretsiz katmanı üzerinden gönderilen metni ürünlerini geliştirmek için kullanabilir; sağlayıcıların politikaları:` — and start again as ` Sağlayıcıların politikaları:` |
+  | `src/i18n/en.json` | 402 (`privacy.s3Body`) | ` Google may use text sent through its free tier to improve its products.` |
+  | `src/i18n/tr.json` | 402 (`privacy.s3Body`) | ` Google, ücretsiz katmanı üzerinden gönderilen metni ürünlerini geliştirmek için kullanabilir.` |
+
+  Then update "Last updated" in `docs/privacy/index.html` (both languages) and `privacy.draft` in both i18n files, and commit. `npm run preflight` reminds you of this each time it runs.
 - [ ] App icon and splash: the current art is a generated placeholder (`scripts/generate-icons.js`). Replace `assets/images/icon.png` (1024×1024), `android-icon-foreground.png`, `android-icon-monochrome.png` and `splash-icon.png` with final artwork.
 - [ ] **Confirm the first Android build works with the Latin-only OCR models.** `plugins/withLatinOnlyTextRecognition.js` (listed in `app.json`) drops the Chinese, Devanagari, Japanese and Korean ML Kit models from the packaged app. The library's Java still imports those classes, so they are excluded from the *runtime* classpaths only (`configurations.configureEach { exclude … }` in `android/app/build.gradle`), plus R8 `-dontwarn` rules in `proguard-rules.pro`. What was verified without an Android SDK: `npx expo prebuild --platform android --clean` writes both blocks once, and the same exclusion in a plain Gradle project keeps the module on `compileClasspath` and removes it from `runtimeClasspath`. **Not verified: a real Android build and the APK size.** On the first `eas build --platform android`: (1) the build must succeed; (2) scan a receipt and confirm text is read (English and Turkish letters); (3) compare the size with the plugin off — set `["./plugins/withLatinOnlyTextRecognition", { "latinOnly": false }]` in `app.json` for one comparison build. If the build fails or OCR breaks, turn the plugin off the same way and tell me.
 - [ ] Rate Slipbird row in Settings: add it once the store URLs exist (`itms-apps://…?action=write-review`, `market://details?id=com.atillaturker.slipbird`).
 - [ ] Privacy policy contact is the GitHub issues page; change it if you prefer an email address.
 - [ ] Real receipts tested (docs/SPEC.md §5) and at least 5 real e-Arşiv QR payloads checked against `src/lib/gib-qr.ts`.
 
-## 7. Store privacy questionnaires (draft answers — check them against your own judgement)
+## 8. Store privacy questionnaires (draft answers — check them against your own judgement)
 
 **Apple "App Privacy"**: Data used to track you — none. Data collected: *Purchases* (subscription status, via RevenueCat, for app functionality, not linked to identity beyond the anonymous id) and *Identifiers → User ID* (anonymous Supabase id, app functionality). Receipt text is processed in real time to read it and not stored by Slipbird; if you decide the AI providers' handling counts as collection, add *User Content → Other user content*.
 
