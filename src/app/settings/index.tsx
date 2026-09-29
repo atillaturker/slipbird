@@ -2,7 +2,7 @@ import Constants from 'expo-constants';
 import { router, Stack } from 'expo-router';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Alert, ScrollView, Switch, Text, View } from 'react-native';
+import { Alert, Linking, Platform, ScrollView, Switch, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { SegmentedControl } from '@/components';
@@ -11,6 +11,7 @@ import { ListGroup } from '@/components/ListGroup';
 import { Section } from '@/components/Section';
 import { SettingsRow } from '@/components/SettingsRow';
 import type { LanguageSetting } from '@/lib/language';
+import { reviewLinks } from '@/lib/store-links';
 import { ensureNotificationPermission } from '@/services/notifications';
 import { wipeAllData } from '@/services/wipe';
 import { useBudgets } from '@/store/budgets';
@@ -31,6 +32,17 @@ export default function SettingsScreen() {
   const isPro = useIsPro();
   const devPro = useProStore((s) => s.devPro);
   const setDevPro = useProStore((s) => s.setDevPro);
+
+  const rateLinks = reviewLinks(Platform.OS);
+  const rate = async () => {
+    if (!rateLinks) return;
+    try {
+      await Linking.openURL(rateLinks.primary);
+    } catch {
+      // No Play Store app to handle market://: open the web listing instead.
+      await Linking.openURL(rateLinks.fallback).catch(() => undefined);
+    }
+  };
 
   const languageLabels: Record<LanguageSetting, string> = { system: t('settings.system'), en: 'English', tr: 'Türkçe' };
 
@@ -112,6 +124,7 @@ export default function SettingsScreen() {
       <Section title={t('settings.about')}>
         <ListGroup>
           <SettingsRow label={t('settings.privacy')} onPress={() => router.push('/settings/privacy')} />
+          {rateLinks ? <SettingsRow label={t('settings.rate')} onPress={() => void rate()} /> : null}
           <SettingsRow label={t('settings.version')} value={Constants.expoConfig?.version ?? ''} />
         </ListGroup>
       </Section>

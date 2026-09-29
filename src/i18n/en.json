@@ -389,7 +389,8 @@
     "deleted": "All data deleted",
     "about": "About",
     "privacy": "Privacy policy",
-    "version": "Version"
+    "version": "Version",
+    "rate": "Rate Slipbird"
   },
   "privacy": {
     "draft": "Last updated 29 September 2026",
