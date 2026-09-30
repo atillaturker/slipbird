@@ -1,0 +1,99 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Slipbird: receipt scanner for Android</title>
+<meta name="description" content="Slipbird scans receipts and e-invoices, checks the numbers and shows where your money goes. Private by design. English and Turkish.">
+<link rel="icon" href="icon.png">
+<style>
+  :root { color-scheme: light dark; --ink:#121613; --muted:#555c55; --paper:#f2f3ef; --rule:#dfe2dc; --stamp:#0a6446; }
+  @media (prefers-color-scheme: dark) { :root { --ink:#edf1ec; --muted:#a0a9a1; --paper:#0e1210; --rule:#2c332e; --stamp:#5fe0ab; } }
+  body { margin:0; background:var(--paper); color:var(--ink); font:16px/1.6 -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  main { max-width:44rem; margin:0 auto; padding:2rem 1rem 4rem; }
+  nav { display:flex; gap:1rem; margin-bottom:2rem; }
+  .hero { display:flex; align-items:center; gap:1rem; margin:1rem 0 1.5rem; }
+  .hero img { width:80px; height:80px; border-radius:18px; }
+  .hero h1 { margin:0; }
+  .tag { font-size:1.15rem; color:var(--muted); margin:.25rem 0 0; }
+  footer { margin-top:3rem; padding-top:1.5rem; border-top:1px solid var(--rule); color:var(--muted); }
+  footer a { margin-right:1rem; }
+  nav a { color:var(--stamp); }
+  h1 { font-size:1.75rem; margin:0 0 .25rem; letter-spacing:-.02em; }
+  h2 { font-size:1.15rem; margin:2rem 0 .5rem; }
+  p, li { margin:.5rem 0; }
+  .meta { color:var(--muted); }
+  section + section { margin-top:3rem; padding-top:2rem; border-top:1px solid var(--rule); }
+  a { color:var(--stamp); }
+</style>
+</head>
+<body>
+<main>
+<nav><a href="#en">English</a><a href="#tr">Türkçe</a></nav>
+
+<section id="en" lang="en">
+  <div class="hero">
+    <img src="icon.png" alt="" width="80" height="80">
+    <div>
+      <h1>Slipbird</h1>
+      <p class="tag">Scan it. Check it. Done.</p>
+    </div>
+  </div>
+  <p>Slipbird turns paper receipts and e-invoices into a clean record of your spending. Scan a receipt, check what needs a look, and see where your money goes.</p>
+
+  <h2>Scan it</h2>
+  <p>Point your camera at a receipt and Slipbird finds the edges, crops it and reads it on your phone. You can also import a photo or scan the QR code on a Turkish e-Arşiv or e-Fatura invoice.</p>
+
+  <h2>Check it</h2>
+  <p>Anything Slipbird is unsure about is flagged, duplicates are caught before you save, and it remembers the category you choose for each merchant.</p>
+
+  <h2>See where it goes</h2>
+  <p>Monthly totals, spending by category, top merchants, budgets with notifications at 80% and 100%, and other currencies converted to yours. Export to CSV, or a monthly PDF report with Slipbird Pro.</p>
+
+  <h2>Private by design</h2>
+  <p>Your receipts and photos stay on your phone. Only the text found on a receipt is sent to be read, and Slipbird does not store it. No account, no ads, no tracking.</p>
+
+  <p class="meta">Free: 15 receipts a month and budgets for 3 categories. Slipbird Pro is a monthly or yearly subscription that removes the limits. Available in English and Turkish.</p>
+
+  <footer>
+    <a href="privacy/">Privacy policy</a>
+    <a href="delete-data/">Delete your data</a>
+    <a href="https://github.com/atillaturker/slipbird/issues">Support</a>
+    <p>Slipbird, by Atilla Türker</p>
+  </footer>
+</section>
+
+<section id="tr" lang="tr">
+  <div class="hero">
+    <img src="icon.png" alt="" width="80" height="80">
+    <div>
+      <h1>Slipbird</h1>
+      <p class="tag">Tara. Kontrol et. Bitti.</p>
+    </div>
+  </div>
+  <p>Slipbird, kâğıt fişleri ve e-faturaları harcamalarınızın düzenli bir kaydına dönüştürür. Fişi tarayın, bakılması gerekene bakın, paranızın nereye gittiğini görün.</p>
+
+  <h2>Tara</h2>
+  <p>Kamerayı fişe tutun; Slipbird kenarları bulur, keser ve telefonunuzda okur. Fotoğraf içe aktarabilir ya da e-Arşiv ve e-Fatura üzerindeki QR kodunu tarayabilirsiniz.</p>
+
+  <h2>Kontrol et</h2>
+  <p>Slipbird’ün emin olmadığı her şey işaretlenir, aynı fiş kaydetmeden önce fark edilir ve her işletme için seçtiğiniz kategori hatırlanır.</p>
+
+  <h2>Nereye gittiğini gör</h2>
+  <p>Aylık toplamlar, kategoriye göre harcama, en çok harcadığınız yerler, %80 ve %100’de bildirim veren bütçeler ve ana para biriminize çevrilen döviz fişleri. CSV dışa aktarımı; aylık PDF rapor Slipbird Pro ile.</p>
+
+  <h2>Tasarımı gereği gizli</h2>
+  <p>Fişleriniz ve fotoğraflarınız telefonunuzda kalır. Okunması için yalnızca fişte bulunan metin gönderilir ve Slipbird onu saklamaz. Hesap yok, reklam yok, izleme yok.</p>
+
+  <p class="meta">Ücretsiz: ayda 15 fiş ve 3 kategori için bütçe. Slipbird Pro, sınırları kaldıran aylık ya da yıllık bir aboneliktir. Türkçe ve İngilizce çalışır.</p>
+
+  <footer>
+    <a href="privacy/#tr">Gizlilik politikası</a>
+    <a href="delete-data/#tr">Verilerinizi silin</a>
+    <a href="https://github.com/atillaturker/slipbird/issues">Destek</a>
+    <p>Slipbird, Atilla Türker</p>
+  </footer>
+</section>
+</main>
+</body>
+</html>
